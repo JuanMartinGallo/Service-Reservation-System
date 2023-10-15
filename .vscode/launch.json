@@ -1,0 +1,14 @@
+{
+    "configurations": [
+        {
+            "type": "java",
+            "name": "Spring Boot-ServiceReservationSystemApplication<Service-Reservation-System>",
+            "request": "launch",
+            "cwd": "${workspaceFolder}",
+            "mainClass": "com.srs.ServiceReservationSystemApplication",
+            "projectName": "Service-Reservation-System",
+            "args": "",
+            "envFile": "${workspaceFolder}/.env"
+        }
+    ]
+}

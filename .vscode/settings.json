@@ -1,0 +1,16 @@
+{
+    "java.compile.nullAnalysis.mode": "automatic",
+    "cSpell.words": [
+        "Configurer",
+        "dbcp",
+        "jdbc",
+        "juanmartin",
+        "millis",
+        "springdoc",
+        "springframework",
+        "thymeleaf",
+        "userdetails",
+        "webjars"
+    ],
+    "java.configuration.updateBuildConfiguration": "automatic"
+}
