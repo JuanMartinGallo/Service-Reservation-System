@@ -66,16 +66,4 @@ public class HomeController {
     userService.update(user.getId(), user);
     return "redirect:/reservations";
   }
-  // @ControllerAdvice
-  // public class GlobalExceptionHandler {
-
-  //   @ExceptionHandler(Exception.class)
-  //   public ResponseEntity<ErrorResponse> handleAllExceptions(Exception e) {
-  //     //  TODO: ver como manejar exepciones globales
-
-  //     return ResponseEntity
-  //       .status(HttpStatus.INTERNAL_SERVER_ERROR)
-  //       .body(errorResponse);
-  //   }
-  // }
 }
