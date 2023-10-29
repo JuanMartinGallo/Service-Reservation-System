@@ -1,6 +1,8 @@
 package com.srs.jwt;
 
 import io.jsonwebtoken.Claims;
+import io.jsonwebtoken.ExpiredJwtException;
+import io.jsonwebtoken.JwtException;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.SignatureAlgorithm;
 import io.jsonwebtoken.io.Decoders;
@@ -44,24 +46,41 @@ public class JwtService {
   }
 
   public boolean isTokenValid(String token, UserDetails userDetails) {
-    final String username = getUsernameFromToken(token);
-    return (username.equals(userDetails.getUsername()) && !isTokenExpired(token));
+    try {
+      final String username = getUsernameFromToken(token);
+      return (
+        username.equals(userDetails.getUsername()) && !isTokenExpired(token)
+      );
+    } catch (IllegalArgumentException e) {
+      System.out.println("Unable to get JWT Token");
+      return false;
+    }
   }
 
   private Claims getAllClaims(String token) {
-    return Jwts
-      .parserBuilder()
-      .setSigningKey(getKey())
-      .build()
-      .parseClaimsJwt(token)
-      .getBody();
+    if (token == null) {
+      return null;
+    }
+    try {
+      return Jwts
+        .parserBuilder()
+        .setSigningKey(getKey())
+        .build()
+        .parseClaimsJws(token)
+        .getBody();
+    } catch (ExpiredJwtException e) {
+      System.out.println("Token Expired");
+    } catch (JwtException e) {
+      System.out.println("Invalid Token");
+    }
+    return null;
   }
 
   public <T> T getClaim(String token, Function<Claims, T> claimsResolver) {
     final Claims claims = getAllClaims(token);
     return claimsResolver.apply(claims);
   }
-  
+
   private Date getExpiration(String token) {
     return getClaim(token, Claims::getExpiration);
   }

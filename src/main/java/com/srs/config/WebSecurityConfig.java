@@ -32,7 +32,7 @@ public class WebSecurityConfig {
           .anyRequest()
           .authenticated()
       )
-      .formLogin(form -> form.permitAll())
+      .formLogin(form -> form.permitAll().defaultSuccessUrl("/index"))
       .logout(logout -> logout.permitAll().logoutSuccessUrl("/"))
       .sessionManagement(sessionManagement ->
         sessionManagement.sessionCreationPolicy(SessionCreationPolicy.STATELESS)

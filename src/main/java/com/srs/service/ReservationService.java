@@ -51,7 +51,7 @@ public class ReservationService {
   }
 
   public void update(final Long id, final Reservation reservation) {
-    final Reservation existingReservation = reservationRepository
+    reservationRepository
       .findById(id)
       .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND));
     reservationRepository.save(reservation);

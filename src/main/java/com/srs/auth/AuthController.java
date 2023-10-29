@@ -1,6 +1,5 @@
 package com.srs.auth;
 
-
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -15,11 +14,15 @@ public class AuthController {
 
   private final AuthService authService;
 
+  //TODO: ver como iniciar sesion
   @PostMapping(value = "login")
-  public ResponseEntity<AuthResponse> login(
-    @RequestBody LoginRequest request
-  ) {
-    return ResponseEntity.ok(authService.login(request));
+  public String login(@RequestBody LoginRequest request) {
+    AuthResponse response = authService.login(request);
+    if (response.getToken() != null) {
+      return "Redirect:/Index";
+    } else {
+      return "Error";
+    }
   }
 
   @PostMapping(value = "register")

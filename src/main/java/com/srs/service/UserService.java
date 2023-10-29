@@ -16,6 +16,11 @@ public class UserService {
     this.userRepository = userRepository;
   }
 
+  /**
+   * Find all users.
+   *
+   * @return a list of User objects
+   */
   public List<User> findAll() {
     return userRepository.findAll();
   }
@@ -31,7 +36,7 @@ public class UserService {
   }
 
   public void update(final Long id, final User user) {
-    final User existingUser = userRepository
+    userRepository
       .findById(id)
       .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND));
 

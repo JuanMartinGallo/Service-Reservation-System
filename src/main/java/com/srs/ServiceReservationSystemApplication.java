@@ -1,13 +1,15 @@
 package com.srs;
 
+import com.srs.auth.AuthService;
+import com.srs.auth.RegisterRequest;
 import com.srs.model.AmenityType;
 import com.srs.model.Capacity;
-import com.srs.model.User;
 import com.srs.repository.CapacityRepository;
 import com.srs.repository.ReservationRepository;
 import com.srs.repository.UserRepository;
 import java.util.HashMap;
 import java.util.Map;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
@@ -16,6 +18,9 @@ import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 
 @SpringBootApplication
 public class ServiceReservationSystemApplication {
+
+  @Autowired
+  private AuthService authService;
 
   private Map<AmenityType, Integer> initialCapacities = new HashMap<>() {
     {
@@ -36,13 +41,15 @@ public class ServiceReservationSystemApplication {
     CapacityRepository capacityRepository
   ) {
     return args -> {
-      userRepository.save(
-        new User(
-          "Juan Martin Gallo",
-          "juanmartin",
-          bCryptPasswordEncoder().encode("12345")
-        )
+      RegisterRequest defaultUser = new RegisterRequest(
+        "Juan Martin Gallo",
+        "juanmartin",
+        "Argentina",
+        "12345"
       );
+
+      authService.register(defaultUser);
+
       for (AmenityType amenityType : initialCapacities.keySet()) {
         capacityRepository.save(
           new Capacity(amenityType, initialCapacities.get(amenityType))
