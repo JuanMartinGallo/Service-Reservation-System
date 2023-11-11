@@ -13,11 +13,11 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
-@Entity
 @Getter
 @Setter
 @AllArgsConstructor
 @NoArgsConstructor
+@Entity
 public class Capacity {
 
   @Id
@@ -34,7 +34,6 @@ public class Capacity {
   )
   private Long id;
 
-  @Column(nullable = false, unique = true)
   @Enumerated(EnumType.STRING)
   private AmenityType amenityType;
 

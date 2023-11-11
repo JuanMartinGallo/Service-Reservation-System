@@ -2,10 +2,12 @@ package com.srs.controller;
 
 import com.srs.model.Reservation;
 import com.srs.model.User;
+import com.srs.service.Impl.UserServiceImpl;
 import com.srs.service.ReservationService;
-import com.srs.service.UserService;
 import jakarta.servlet.http.HttpSession;
 import java.util.Set;
+
+import lombok.AllArgsConstructor;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UserDetails;
@@ -17,15 +19,15 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.SessionAttribute;
 
 @Controller
-@RequiredArgsConstructor
+@AllArgsConstructor
 public class HomeController {
 
-  final UserService userService;
-  final ReservationService reservationService;
+  private final UserServiceImpl userService;
+  private final ReservationService reservationService;
 
-  @GetMapping("/")
-  public String index(Model model) {
-    return "login";
+  @GetMapping({"/", "/index", "/home"})
+  public String home(Model model) {
+    return "index";
   }
 
   @GetMapping("/reservations")
@@ -64,6 +66,6 @@ public class HomeController {
     userReservations.add(reservation);
     user.setReservations(userReservations);
     userService.update(user.getId(), user);
-    return "redirect:/reservations";
+    return "reservations";
   }
 }

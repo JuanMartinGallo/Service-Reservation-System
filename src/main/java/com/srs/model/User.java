@@ -19,23 +19,26 @@ import java.util.Collection;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
+
 import lombok.AllArgsConstructor;
 import lombok.Builder;
-import lombok.Data;
+import lombok.Getter;
 import lombok.NoArgsConstructor;
+import lombok.Setter;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 
+@Setter
+@Getter
+@NoArgsConstructor
+@AllArgsConstructor
+@Builder
 @Entity
 @Table(
   name = "*/user*/",
   uniqueConstraints = { @UniqueConstraint(columnNames = { "username" }) }
 )
-@Data
-@Builder
-@NoArgsConstructor
-@AllArgsConstructor
 public class User implements UserDetails {
 
   @Id
@@ -53,19 +56,20 @@ public class User implements UserDetails {
   private Long id;
 
   @Column(nullable = false, unique = true)
-  private String fullName;
+  private String fullname;
 
   @Column(nullable = false, unique = true)
   private String username;
 
-  @Column 
+  @Column
   private String country;
 
   @Column
-  private String passwordHash;
+  private String password;
 
+  @Builder.Default
   @Enumerated(EnumType.STRING)
-  Role role;
+  Role role = Role.USER;
 
   @Builder.Default
   @OneToMany(mappedBy = "user", fetch = FetchType.EAGER)
@@ -86,12 +90,6 @@ public class User implements UserDetails {
   @PreUpdate
   public void preUpdate() {
     lastUpdated = OffsetDateTime.now();
-  }
-
-  public User(String fullName, String username, String passwordHash) {
-    this.fullName = fullName;
-    this.username = username;
-    this.passwordHash = passwordHash;
   }
 
   //UserDetails implementation
@@ -122,6 +120,9 @@ public class User implements UserDetails {
 
   @Override
   public String getPassword() {
-    throw new UnsupportedOperationException("Unimplemented method 'getPassword'");
+    // TODO Auto-generated method stub
+    throw new UnsupportedOperationException(
+      "Unimplemented method 'getPassword'"
+    );
   }
 }

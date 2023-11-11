@@ -1,14 +1,14 @@
 package com.srs.auth;
 
 import com.srs.jwt.JwtService;
-import com.srs.model.Role;
+import com.srs.model.DTO.RegisterRequest;
 import com.srs.model.User;
 import com.srs.repository.UserRepository;
+import com.srs.service.Impl.UserServiceImpl;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.userdetails.UserDetails;
-import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 @Service
@@ -17,8 +17,8 @@ public class AuthService {
 
   private final UserRepository userRepository;
   private final JwtService jwtService;
-  private final PasswordEncoder passwordEncoder;
   private final AuthenticationManager authenticationManager;
+  private final UserServiceImpl userService;
 
   public AuthResponse login(LoginRequest request) {
     authenticationManager.authenticate(
@@ -35,14 +35,7 @@ public class AuthService {
   }
 
   public AuthResponse register(RegisterRequest request) {
-    User user = User
-      .builder()
-      .fullName(request.getFullName())
-      .username(request.getUsername())
-      .country(request.getCountry())
-      .passwordHash(passwordEncoder.encode(request.getPassword()))
-      .role(Role.USER)
-      .build();
+    User user = userService.mapToEntity(request);
 
     userRepository.save(user);
 

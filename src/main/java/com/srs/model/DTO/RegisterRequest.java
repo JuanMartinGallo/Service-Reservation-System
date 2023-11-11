@@ -1,4 +1,4 @@
-package com.srs.auth;
+package com.srs.model.DTO;
 
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -10,8 +10,10 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 @NoArgsConstructor
 public class RegisterRequest {
-    String fullName;
-    String username;
-    String country;
-    String password;
+
+  String fullname;
+  String username;
+
+  String country;
+  String password;
 }

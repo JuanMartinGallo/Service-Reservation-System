@@ -1,16 +1,18 @@
 package com.srs.model;
 
 public enum AmenityType {
-    POOL("POOL"), SAUNA("SAUNA"), GYM("GYM");
+  POOL("POOL"),
+  SAUNA("SAUNA"),
+  GYM("GYM");
 
-    private final String name;
+  private final String name;
 
-    private AmenityType(String value) {
-        name = value;
-    }
+  private AmenityType(String value) {
+    name = value;
+  }
 
-    @Override
-    public String toString() {
-        return name;
-    }
+  @Override
+  public String toString() {
+    return name;
+  }
 }

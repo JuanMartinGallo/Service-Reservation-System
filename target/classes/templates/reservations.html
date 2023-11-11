@@ -13,7 +13,7 @@
     <div>
         <div th:insert="~{fragments/nav :: nav}"></div>
         <div class="container" style="padding-top: 10vh; display: flex; flex-direction: column; align-items: center;">
-            <h3>Welcome <span th:text=" ${session.user.getFullName()}"></span></h3>
+            <h3>Welcome <span th:text=" ${session.user.getFullname()}"></span></h3>
             <br />
             <table class="table">
                 <thead>

@@ -1,53 +1,20 @@
 package com.srs.service;
 
 import com.srs.model.User;
-import com.srs.repository.UserRepository;
 import java.util.List;
-import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
-import org.springframework.web.server.ResponseStatusException;
 
 @Service
-public class UserService {
+public interface UserService {
+  List<User> findAll();
 
-  private final UserRepository userRepository;
+  User get(final Long id);
 
-  public UserService(final UserRepository userRepository) {
-    this.userRepository = userRepository;
-  }
+  Long create(final User user);
 
-  /**
-   * Find all users.
-   *
-   * @return a list of User objects
-   */
-  public List<User> findAll() {
-    return userRepository.findAll();
-  }
+  void update(final Long id, final User user);
 
-  public User get(final Long id) {
-    return userRepository
-      .findById(id)
-      .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND));
-  }
+  void delete(final Long id);
 
-  public Long create(final User user) {
-    return userRepository.save(user).getId();
-  }
-
-  public void update(final Long id, final User user) {
-    userRepository
-      .findById(id)
-      .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND));
-
-    userRepository.save(user);
-  }
-
-  public void delete(final Long id) {
-    userRepository.deleteById(id);
-  }
-
-  public User getUserByUsername(String username) {
-    return userRepository.findUserByUsername(username);
-  }
+  User getUserByUsername(String username);
 }

@@ -1,9 +1,9 @@
 package com.srs;
 
 import com.srs.auth.AuthService;
-import com.srs.auth.RegisterRequest;
 import com.srs.model.AmenityType;
 import com.srs.model.Capacity;
+import com.srs.model.DTO.RegisterRequest;
 import com.srs.repository.CapacityRepository;
 import com.srs.repository.ReservationRepository;
 import com.srs.repository.UserRepository;
@@ -14,13 +14,17 @@ import org.springframework.boot.CommandLineRunner;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.context.annotation.Bean;
-import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 
 @SpringBootApplication
 public class ServiceReservationSystemApplication {
 
-  @Autowired
   private AuthService authService;
+
+  public ServiceReservationSystemApplication(
+    @Autowired AuthService authService
+  ) {
+    this.authService = authService;
+  }
 
   private Map<AmenityType, Integer> initialCapacities = new HashMap<>() {
     {
@@ -41,12 +45,13 @@ public class ServiceReservationSystemApplication {
     CapacityRepository capacityRepository
   ) {
     return args -> {
-      RegisterRequest defaultUser = new RegisterRequest(
-        "Juan Martin Gallo",
-        "juanmartin",
-        "Argentina",
-        "12345"
-      );
+      RegisterRequest defaultUser = RegisterRequest
+        .builder()
+        .fullname("Juan Martin Gallo")
+        .username("juanmartin")
+        .country("Argentina")
+        .password("12345")
+        .build();
 
       authService.register(defaultUser);
 
@@ -56,10 +61,5 @@ public class ServiceReservationSystemApplication {
         );
       }
     };
-  }
-
-  @Bean
-  public BCryptPasswordEncoder bCryptPasswordEncoder() {
-    return new BCryptPasswordEncoder();
   }
 }
