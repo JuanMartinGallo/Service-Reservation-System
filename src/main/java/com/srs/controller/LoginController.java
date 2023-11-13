@@ -25,7 +25,7 @@ public class LoginController {
   private final AuthService authService;
   private final RequestCache requestCache;
 
-  @GetMapping(value = "/login") //TODO: ver el video que sigue
+  @GetMapping(value = "/login") 
   public String login(
     @RequestParam(value = "logout", defaultValue = "false") boolean logout,
     @RequestParam(value = "error", required = false) String error,
