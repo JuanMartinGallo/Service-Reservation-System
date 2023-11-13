@@ -1,24 +1,30 @@
-<html>
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" xmlns:th="https://www.thymeleaf.org"
+    xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
 
-<head></head>
+<head>
+    <meta charset="UTF-8">
+    <title>Login Form</title>
+    <link rel="stylesheet" type="text/css" th:href="@{/css/login.css}">
+</head>
 
 <body>
-    <h1>Login</h1>
-    <form name='f' action="login" method='POST'>
-        <table>
-            <tr>
-                <td>User:</td>
-                <td><input type='text' name='username' value=''></td>
-            </tr>
-            <tr>
-                <td>Password:</td>
-                <td><input type='password' name='password' /></td>
-            </tr>
-            <tr>
-                <td><input name="submit" type="submit" value="submit" /></td>
-            </tr>
-        </table>
-    </form>
+    <div class="login-page">
+        <div th:if="${error}"><p th:text="${error}"></p></div>
+        <div th:if="${message}"><p th:text="${message}"></p></div>
+        <div class="form">
+            <form class="login-form" method="post" th:action="@{/process-login}">
+                <input type="text" placeholder="username" />
+                <input type="password" placeholder="password" />
+                <input type="submit" value="Log in" id="button" />
+                <p class="message">Not registered? <a href="#">Create an account</a></p>
+            </form>
+        </div>
+    </div>
+
+    <script src="//cdnjs.cloudflare.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+    <script th:src="@{/js/login.js}"></script>
+
 </body>
 
-</html>
+</>

@@ -1,6 +1,7 @@
 package com.srs.config;
 
 import com.srs.jwt.JwtAuthenticationFilter;
+import com.srs.util.LoginSuccessMessage;
 import lombok.RequiredArgsConstructor;
 import org.springframework.boot.autoconfigure.security.servlet.PathRequest;
 import org.springframework.context.annotation.Bean;
@@ -20,6 +21,7 @@ public class WebSecurityConfig {
 
   private final JwtAuthenticationFilter jwtAuthenticationFilter;
   private final AuthenticationProvider authProvider;
+  private final LoginSuccessMessage loginSuccessMessage;
 
   @Bean
   public SecurityFilterChain securityFilterChain(HttpSecurity http)
@@ -44,8 +46,21 @@ public class WebSecurityConfig {
           .authenticated()
       )
       .formLogin(login -> {
-        login.permitAll();
-        })
+        login
+          .loginPage("/login")
+          .successHandler(loginSuccessMessage)
+          .loginProcessingUrl("/process-login")
+          .defaultSuccessUrl("/home")
+          .failureUrl("/login?error=true")
+          .permitAll();
+      })
+      .logout(logout -> {
+        logout
+          .logoutSuccessUrl("/login?logout=true")
+          .invalidateHttpSession(true)
+          .deleteCookies("JSESSIONID")
+          .permitAll();
+      })
       .sessionManagement(sessionManagement -> {
         sessionManagement
           .sessionCreationPolicy(SessionCreationPolicy.ALWAYS)

@@ -8,7 +8,6 @@ import jakarta.servlet.http.HttpSession;
 import java.util.Set;
 
 import lombok.AllArgsConstructor;
-import lombok.RequiredArgsConstructor;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Controller;
@@ -67,5 +66,13 @@ public class HomeController {
     user.setReservations(userReservations);
     userService.update(user.getId(), user);
     return "reservations";
+  }
+
+  @PostMapping("/delete-reservations")
+  public String deleteReservations(
+    @ModelAttribute Reservation reservation
+  ) {
+    reservationService.delete(reservation.getId());
+    return "redirect:/reservations";
   }
 }

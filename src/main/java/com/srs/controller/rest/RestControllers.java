@@ -1,8 +1,9 @@
-package com.srs.auth;
+package com.srs.controller.rest;
 
+import com.srs.auth.AuthResponse;
+import com.srs.auth.AuthService;
 import com.srs.model.DTO.RegisterRequest;
 import com.srs.repository.UserRepository;
-
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;

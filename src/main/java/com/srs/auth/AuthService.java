@@ -1,6 +1,7 @@
 package com.srs.auth;
 
 import com.srs.jwt.JwtService;
+import com.srs.model.DTO.LoginRequest;
 import com.srs.model.DTO.RegisterRequest;
 import com.srs.model.User;
 import com.srs.repository.UserRepository;

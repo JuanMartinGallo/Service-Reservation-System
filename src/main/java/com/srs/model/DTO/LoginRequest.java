@@ -1,4 +1,4 @@
-package com.srs.auth;
+package com.srs.model.DTO;
 
 
 import lombok.AllArgsConstructor;
