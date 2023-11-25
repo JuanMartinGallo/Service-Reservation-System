@@ -50,7 +50,7 @@ public class WebSecurityConfig {
           .loginPage("/login")
           .successHandler(loginSuccessMessage)
           .loginProcessingUrl("/process-login")
-          .defaultSuccessUrl("/home")
+          .defaultSuccessUrl("/home", true)
           .failureUrl("/login?error=true")
           .permitAll();
       })

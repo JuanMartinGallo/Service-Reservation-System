@@ -7,11 +7,13 @@
         "firstname",
         "fittext",
         "jdbc",
+        "JSESSIONID",
         "juanmartin",
         "Jwts",
         "lastname",
         "millis",
         "nulo",
+        "ocurrido",
         "Servlet",
         "signin",
         "springdoc",
@@ -20,5 +22,6 @@
         "userdetails",
         "webjars"
     ],
-    "java.configuration.updateBuildConfiguration": "automatic"
+    "java.configuration.updateBuildConfiguration": "automatic",
+    "editor.inlineSuggest.showToolbar": "onHover"
 }

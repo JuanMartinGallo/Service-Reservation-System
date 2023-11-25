@@ -36,7 +36,7 @@ public class ServiceReservationSystemApplication {
 
   public static void main(String[] args) {
     SpringApplication.run(ServiceReservationSystemApplication.class, args);
-  }
+  }//TODO: revisar si el programa funciona bien
 
   @Bean
   public CommandLineRunner loadData(
