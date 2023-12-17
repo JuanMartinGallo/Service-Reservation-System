@@ -3,10 +3,11 @@ package com.srs.controller;
 import com.srs.auth.AuthResponse;
 import com.srs.auth.AuthService;
 import com.srs.model.DTO.LoginRequest;
+
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import java.security.Principal;
-import lombok.RequiredArgsConstructor;
+import lombok.AllArgsConstructor;
 import org.springframework.security.web.savedrequest.RequestCache;
 import org.springframework.security.web.savedrequest.SavedRequest;
 import org.springframework.stereotype.Controller;
@@ -18,7 +19,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 @Controller
-@RequiredArgsConstructor
+@AllArgsConstructor
 public class LoginController {
 
   private final AuthService authService;

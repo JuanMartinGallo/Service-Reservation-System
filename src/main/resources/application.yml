@@ -1,5 +1,6 @@
 spring:
   datasource:
+    driver-class-name: org.h2.Driver
     url: ${JDBC_DATABASE_URL:jdbc:h2:mem:amenity-reservation-system}
     username: ${JDBC_DATABASE_USERNAME:sa}
     password: ${JDBC_DATABASE_PASSWORD:}

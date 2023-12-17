@@ -18,11 +18,8 @@ import org.springframework.security.web.savedrequest.RequestCache;
 @Configuration
 public class ApplicationConfig {
 
-  private final UserRepository userRepository;
-
-  public ApplicationConfig(@Autowired UserRepository userRepository) {
-    this.userRepository = userRepository;
-  }
+  @Autowired
+  private UserRepository userRepository;
 
   @Bean
   public AuthenticationManager authenticationManager(
@@ -52,8 +49,8 @@ public class ApplicationConfig {
     return new BCryptPasswordEncoder();
   }
 
-   @Bean
-    public RequestCache requestCache() {
-        return new HttpSessionRequestCache();
-    }
+  @Bean
+  public RequestCache requestCache() {
+    return new HttpSessionRequestCache();
+  }
 }

@@ -2,8 +2,9 @@ package com.srs.controller;
 
 import com.srs.model.Reservation;
 import com.srs.model.User;
-import com.srs.service.Impl.UserServiceImpl;
 import com.srs.service.ReservationService;
+import com.srs.service.impl.UserServiceImpl;
+
 import jakarta.servlet.http.HttpSession;
 import java.util.Set;
 

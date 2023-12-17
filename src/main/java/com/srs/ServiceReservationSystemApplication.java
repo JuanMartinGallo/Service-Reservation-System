@@ -7,24 +7,23 @@ import com.srs.model.DTO.RegisterRequest;
 import com.srs.repository.CapacityRepository;
 import com.srs.repository.ReservationRepository;
 import com.srs.repository.UserRepository;
+
 import java.util.HashMap;
 import java.util.Map;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.ComponentScan;
 
 @SpringBootApplication
+@ComponentScan()
 public class ServiceReservationSystemApplication {
 
+  @Autowired
   private AuthService authService;
-
-  public ServiceReservationSystemApplication(
-    @Autowired AuthService authService
-  ) {
-    this.authService = authService;
-  }
 
   private Map<AmenityType, Integer> initialCapacities = new HashMap<>() {
     {
@@ -36,7 +35,7 @@ public class ServiceReservationSystemApplication {
 
   public static void main(String[] args) {
     SpringApplication.run(ServiceReservationSystemApplication.class, args);
-  }//TODO: revisar si el programa funciona bien
+  }
 
   @Bean
   public CommandLineRunner loadData(

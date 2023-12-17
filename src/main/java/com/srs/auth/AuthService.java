@@ -5,15 +5,16 @@ import com.srs.model.DTO.LoginRequest;
 import com.srs.model.DTO.RegisterRequest;
 import com.srs.model.User;
 import com.srs.repository.UserRepository;
-import com.srs.service.Impl.UserServiceImpl;
-import lombok.RequiredArgsConstructor;
+import com.srs.service.impl.UserServiceImpl;
+
+import lombok.AllArgsConstructor;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Service;
 
+@AllArgsConstructor
 @Service
-@RequiredArgsConstructor
 public class AuthService {
 
   private final UserRepository userRepository;
@@ -21,6 +22,12 @@ public class AuthService {
   private final AuthenticationManager authenticationManager;
   private final UserServiceImpl userService;
 
+  /**
+   * Authenticates a user's login request and returns an authentication response.
+   *
+   * @param  request  the login request containing the username and password
+   * @return          the authentication response containing the JWT token
+   */
   public AuthResponse login(LoginRequest request) {
     authenticationManager.authenticate(
       new UsernamePasswordAuthenticationToken(
@@ -35,6 +42,12 @@ public class AuthService {
     return AuthResponse.builder().token(token).build();
   }
 
+  /**
+   * Registers a new user and returns an authentication response.
+   *
+   * @param  request   the registration request containing user details
+   * @return           the authentication response with a generated token
+   */
   public AuthResponse register(RegisterRequest request) {
     User user = userService.mapToEntity(request);
 
@@ -42,5 +55,4 @@ public class AuthService {
 
     return AuthResponse.builder().token(jwtService.getToken(user)).build();
   }
-
 }
