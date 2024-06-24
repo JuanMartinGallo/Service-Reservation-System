@@ -1,0 +1,71 @@
+[versions]
+aspectj = "1.9.22.1"
+benManesVersions = "0.51.0"
+dependencyCheck = "9.2.0"
+dependencyManagement = "1.1.5"
+flyway = "10.15.0"
+jackson = "2.17.1"
+lombok = "1.18.32"
+micrometer = "1.13.1"
+postgresqlJdbc = "42.7.3"
+postgresqlR2dbc = "1.0.5.RELEASE"
+reactorTest = "3.6.7"
+sonarqube = "5.0.0.4638"
+springBoot = "3.3.1"
+springdoc = "2.5.0"
+testcontainers = "1.19.8"
+testng = "7.10.2"
+versionCatalogUpdate = "0.8.4"
+springAspects = "6.1.10"
+
+[libraries]
+# Spring
+springBootStarterActuator = { module = "org.springframework.boot:spring-boot-starter-actuator", version.ref = "springBoot" }
+springBootStarterDataR2dbc = { module = "org.springframework.boot:spring-boot-starter-data-r2dbc", version.ref = "springBoot" }
+springBootStarterValidation = { module = "org.springframework.boot:spring-boot-starter-validation", version.ref = "springBoot" }
+springBootStarterWebflux = { module = "org.springframework.boot:spring-boot-starter-webflux", version.ref = "springBoot" }
+springBootTestcontainers = { module = "org.springframework.boot:spring-boot-testcontainers", version.ref = "springBoot" }
+springJdbc = { module = "org.springframework:spring-jdbc" }
+springRetry = { module = "org.springframework.retry:spring-retry" }
+springAspects = { module = "org.springframework:spring-aspects", version.ref = "springAspects" }
+
+# JSON
+jacksonDatabind = { module = "com.fasterxml.jackson.core:jackson-databind", version.ref = "jackson" }
+jacksonDatatypeJsr310 = { module = "com.fasterxml.jackson.datatype:jackson-datatype-jsr310", version.ref = "jackson" }
+
+# Data
+flywayCore = { module = "org.flywaydb:flyway-core", version.ref = "flyway" }
+postgresql = { module = "org.postgresql:postgresql", version.ref = "postgresqlJdbc" }
+r2dbcPostgresql = { module = "org.postgresql:r2dbc-postgresql", version.ref = "postgresqlR2dbc" }
+
+# Lombok
+lombok = { module = "org.projectlombok:lombok", version.ref = "lombok" }
+
+# Documentation
+springdocOpenapiStarterWebfluxUi = { module = "org.springdoc:springdoc-openapi-starter-webflux-ui", version.ref = "springdoc" }
+
+# Metrics & Monitoring
+micrometerRegistryPrometheus = { module = "io.micrometer:micrometer-registry-prometheus", version.ref = "micrometer" }
+
+# Resilience
+aspectjrt = { module = "org.aspectj:aspectjrt", version.ref = "aspectj" }
+aspectjweaver = { module = "org.aspectj:aspectjweaver", version.ref = "aspectj" }
+
+# Unit Testing
+springBootStarterTest = { module = "org.springframework.boot:spring-boot-starter-test", version.ref = "springBoot" }
+reactorTest = { module = "io.projectreactor:reactor-test", version.ref = "reactorTest" }
+testng = { module = "org.testng:testng", version.ref = "testng" }
+
+# Integration Test
+testcontainersJunitJupiter = { module = "org.testcontainers:junit-jupiter", version.ref = "testcontainers" }
+testcontainersPostgresql = { module = "org.testcontainers:postgresql", version.ref = "testcontainers" }
+testcontainersR2dbc = { module = "org.testcontainers:r2dbc", version.ref = "testcontainers" }
+
+
+[plugins]
+benManesVersions = { id = "com.github.ben-manes.versions", version.ref = "benManesVersions" }
+dependencyCheck = { id = "org.owasp.dependencycheck", version.ref = "dependencyCheck" }
+dependencyManagement = { id = "io.spring.dependency-management", version.ref = "dependencyManagement" }
+sonarqube = { id = "org.sonarqube", version.ref = "sonarqube" }
+springBoot = { id = "org.springframework.boot", version.ref = "springBoot" }
+versionCatalogUpdate = { id = "nl.littlerobots.version-catalog-update", version.ref = "versionCatalogUpdate" }

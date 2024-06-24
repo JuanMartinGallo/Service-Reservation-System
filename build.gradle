@@ -1,0 +1,93 @@
+plugins {
+    id 'java'
+    id 'jacoco'
+    id 'checkstyle'
+    alias(libs.plugins.springBoot)
+    alias(libs.plugins.dependencyManagement)
+    alias(libs.plugins.dependencyCheck)
+    alias(libs.plugins.benManesVersions)
+    alias(libs.plugins.versionCatalogUpdate)
+    alias(libs.plugins.sonarqube)
+}
+
+group = 'com.srs'
+version = '1.0.1'
+
+java {
+    sourceCompatibility = '17'
+}
+
+repositories {
+    mavenCentral()
+}
+
+dependencies {
+    // Spring
+    implementation libs.springBootStarterWebflux
+    implementation libs.springBootStarterValidation
+
+    // JSON
+    implementation libs.jacksonDatabind
+    implementation libs.jacksonDatatypeJsr310
+
+    // Data
+    implementation libs.flywayCore
+    implementation libs.springBootStarterDataR2dbc
+    implementation libs.springJdbc
+    runtimeOnly libs.postgresql
+    runtimeOnly libs.r2dbcPostgresql
+
+    // Lombok
+    compileOnly libs.lombok
+    annotationProcessor libs.lombok
+
+    // Documentation
+    implementation libs.springdocOpenapiStarterWebfluxUi
+
+//    // Metrics & Monitoring
+//    implementation libs.springBootStarterActuator
+//    implementation libs.micrometerRegistryPrometheus
+
+    // Resilience
+    implementation libs.springRetry
+    implementation libs.springAspects
+    implementation libs.aspectjrt
+    implementation libs.aspectjweaver
+
+    // Unit Testing
+    testImplementation libs.springBootStarterTest
+    testImplementation libs.reactorTest
+    testImplementation libs.testng
+
+    // Integration Test
+    testImplementation libs.springBootTestcontainers
+    testImplementation libs.testcontainersJunitJupiter
+    testImplementation libs.testcontainersR2dbc
+    testImplementation libs.testcontainersPostgresql
+}
+
+
+test {
+    useJUnitPlatform()
+}
+
+bootRun {
+    jvmArgs = ['-Dspring.profiles.active=local']
+}
+
+tasks.withType(JavaCompile) {
+    options.compilerArgs += ['-parameters']
+}
+
+// Dependency Maintenance
+def isNonStable = { String version ->
+    def stableKeyword = ['RELEASE', 'FINAL', 'GA'].any { it -> version.toUpperCase().contains(it) }
+    def regex = /^[0-9,.v-]+(-r)?$/
+    return !stableKeyword && !(version ==~ regex)
+}
+
+tasks.named("dependencyUpdates").configure {
+    rejectVersionIf {
+        isNonStable(it.candidate.version)
+    }
+}
