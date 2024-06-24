@@ -66,9 +66,22 @@ dependencies {
     testImplementation libs.testcontainersPostgresql
 }
 
+jacoco {
+    toolVersion = "0.8.11"
+}
 
 test {
     useJUnitPlatform()
+}
+
+jacocoTestReport {
+    dependsOn test // tests are required to run before generating the report
+
+    reports {
+        xml.required = true
+        csv.required = false
+        html.outputLocation.set(layout.buildDirectory.dir("jacocoHtml"))
+    }
 }
 
 bootRun {
