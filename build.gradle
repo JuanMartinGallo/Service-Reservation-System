@@ -73,6 +73,26 @@ dependencies {
     implementation libs.jsonWebToken
 }
 
+checkstyle {
+    toolVersion = '10.17.0'
+    configFile = file("${rootDir}/config/checkstyle/checkstyle.xml")
+}
+
+checkstyleMain {
+    source = 'src/main/java'
+}
+
+checkstyleTest {
+    source = 'src/test/java'
+}
+
+tasks.register('checkstyle') {
+    reports {
+        xml.required = false
+        html.required = true
+    }
+}
+
 jacoco {
     toolVersion = "0.8.11"
 }
