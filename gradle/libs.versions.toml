@@ -17,6 +17,9 @@ testcontainers = "1.19.8"
 testng = "7.10.2"
 versionCatalogUpdate = "0.8.4"
 springAspects = "6.1.10"
+springSecurity = "3.3.1"
+springSecurityTest = "6.3.1"
+jsonWebToken = "0.12.6"
 
 [libraries]
 # Spring
@@ -26,8 +29,6 @@ springBootStarterValidation = { module = "org.springframework.boot:spring-boot-s
 springBootStarterWebflux = { module = "org.springframework.boot:spring-boot-starter-webflux", version.ref = "springBoot" }
 springBootTestcontainers = { module = "org.springframework.boot:spring-boot-testcontainers", version.ref = "springBoot" }
 springJdbc = { module = "org.springframework:spring-jdbc" }
-springRetry = { module = "org.springframework.retry:spring-retry" }
-springAspects = { module = "org.springframework:spring-aspects", version.ref = "springAspects" }
 
 # JSON
 jacksonDatabind = { module = "com.fasterxml.jackson.core:jackson-databind", version.ref = "jackson" }
@@ -50,6 +51,8 @@ micrometerRegistryPrometheus = { module = "io.micrometer:micrometer-registry-pro
 # Resilience
 aspectjrt = { module = "org.aspectj:aspectjrt", version.ref = "aspectj" }
 aspectjweaver = { module = "org.aspectj:aspectjweaver", version.ref = "aspectj" }
+springRetry = { module = "org.springframework.retry:spring-retry" }
+springAspects = { module = "org.springframework:spring-aspects", version.ref = "springAspects" }
 
 # Unit Testing
 springBootStarterTest = { module = "org.springframework.boot:spring-boot-starter-test", version.ref = "springBoot" }
@@ -60,6 +63,11 @@ testng = { module = "org.testng:testng", version.ref = "testng" }
 testcontainersJunitJupiter = { module = "org.testcontainers:junit-jupiter", version.ref = "testcontainers" }
 testcontainersPostgresql = { module = "org.testcontainers:postgresql", version.ref = "testcontainers" }
 testcontainersR2dbc = { module = "org.testcontainers:r2dbc", version.ref = "testcontainers" }
+
+# Security
+springSecurity = { module = "org.springframework.boot:spring-boot-starter-security", version.ref = "springSecurity" }
+springSecurityTest = { module = "org.springframework.security:spring-security-test", version.ref = "springSecurityTest" }
+jsonWebToken = { module = "io.jsonwebtoken:jjwt", version.ref = "jsonWebToken" }
 
 
 [plugins]

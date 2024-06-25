@@ -64,6 +64,13 @@ dependencies {
     testImplementation libs.testcontainersJunitJupiter
     testImplementation libs.testcontainersR2dbc
     testImplementation libs.testcontainersPostgresql
+
+    // Security
+    implementation libs.springSecurity
+    testImplementation libs.springSecurityTest
+
+    // JWT
+    implementation libs.jsonWebToken
 }
 
 jacoco {
