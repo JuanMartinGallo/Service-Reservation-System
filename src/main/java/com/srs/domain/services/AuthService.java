@@ -41,7 +41,7 @@ public class AuthService {
                     )
             );
             UserDetails user = userDetailsService.loadUserByUsername(request.getUsername());
-            String token = jwtService.getToken(user);
+            String token = String.valueOf(jwtService.getToken(user));
             return AuthResponse.builder().token(token).build();
         });
     }
@@ -59,7 +59,7 @@ public class AuthService {
 
             userRepository.save(user);
 
-            String token = jwtService.getToken(user);
+            String token = String.valueOf(jwtService.getToken(user));
             return AuthResponse.builder().token(token).build();
         });
     }

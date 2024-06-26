@@ -1,40 +1,41 @@
 package com.srs.infraestructure.controller.rest;
 
 import com.srs.domain.models.dto.AuthResponse;
+import com.srs.domain.models.dto.RegisterRequest;
+import com.srs.domain.repositories.UserRepository;
 import com.srs.domain.services.AuthService;
-import com.srs.model.DTO.RegisterRequest;
-import com.srs.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.reactive.function.server.ServerResponse;
+import reactor.core.publisher.Mono;
 
-@RequiredArgsConstructor
 @RestController
+@RequiredArgsConstructor
 public class RestControllers {
 
     private final AuthService authService;
     private final UserRepository userRepository;
 
     @PostMapping(value = "/register")
-    public ResponseEntity<AuthResponse> register(
-            @RequestBody RegisterRequest request
-    ) {
+    public Mono<ServerResponse> register(@RequestBody RegisterRequest request) {
         if (request == null) {
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST).build();
+            return ServerResponse.badRequest().build();
         }
 
-        if (userRepository.existsByUsername(request.getUsername())) {
-            AuthResponse message = new AuthResponse("Username is taken!");
-            return new ResponseEntity<>(message, HttpStatus.BAD_REQUEST);
-        }
-
-        try {
-            return ResponseEntity.ok(authService.register(request));
-        } catch (Exception e) {
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST).build();
-        }
+        return userRepository.existsByUsername(request.getUsername())
+                .flatMap(exists -> {
+                    if (exists) {
+                        AuthResponse message = new AuthResponse("Username is taken!");
+                        return ServerResponse.status(HttpStatus.BAD_REQUEST).bodyValue(message);
+                    } else {
+                        return authService.register(request)
+                                .flatMap(authResponse -> ServerResponse.ok().bodyValue(authResponse))
+                                .onErrorResume(e -> ServerResponse.status(HttpStatus.BAD_REQUEST).build());
+                    }
+                })
+                .switchIfEmpty(ServerResponse.status(HttpStatus.BAD_REQUEST).build());
     }
 }

@@ -1,73 +1,67 @@
 package com.srs.infraestructure.controller;
 
-import com.srs.domain.models.dto.AuthResponse;
+import com.srs.domain.models.dto.LoginRequest;
 import com.srs.domain.services.AuthService;
-import com.srs.model.DTO.LoginRequest;
-import jakarta.servlet.http.HttpServletRequest;
-import jakarta.servlet.http.HttpServletResponse;
-import lombok.AllArgsConstructor;
-import org.springframework.security.web.savedrequest.RequestCache;
-import org.springframework.security.web.savedrequest.SavedRequest;
+import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Controller;
-import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.servlet.mvc.support.RedirectAttributes;
-
-import java.security.Principal;
+import org.springframework.web.server.ServerWebExchange;
+import reactor.core.publisher.Mono;
 
 @Controller
-@AllArgsConstructor
+@RequiredArgsConstructor
 public class LoginController {
 
     private final AuthService authService;
-    private final RequestCache requestCache;
 
     @GetMapping(value = "/login")
-    public String login(
+    public Mono<String> login(
             @RequestParam(value = "logout", defaultValue = "false") boolean logout,
             @RequestParam(value = "error", required = false) String error,
-            Model model,
-            Principal principal,
-            RedirectAttributes attribute
+            ServerWebExchange exchange
     ) {
-        if (error != null) {
-            model.addAttribute("error", "Invalid username or password");
-        }
-        if (principal != null) {
-            attribute.addFlashAttribute("warning", "You are already logged in");
-            return "redirect:/home";
-        }
-        if (logout) {
-            model.addAttribute("message", "You have been logged out");
-        }
-
-        return "login";
+        return exchange.getSession()
+                .flatMap(session -> {
+                    if (error != null) {
+                        session.getAttributes().put("error", "Invalid username or password");
+                    }
+                    return exchange.getPrincipal()
+                            .flatMap(principalObj -> {
+                                if (principalObj != null) {
+                                    session.getAttributes().put("warning", "You are already logged in");
+                                    return Mono.just("redirect:/home");
+                                }
+                                if (logout) {
+                                    session.getAttributes().put("message", "You have been logged out");
+                                }
+                                return Mono.just("login");
+                            });
+                });
     }
 
     @PostMapping(value = "/process-login")
-    private String login(
-            @RequestBody LoginRequest request,
-            HttpServletRequest req,
-            HttpServletResponse res
+    public Mono<String> login(
+            @RequestBody LoginRequest request
     ) {
-        AuthResponse response = authService.login(request);
-        if (response.getToken() != null) {
-            return loginSuccessHandler(req, res);
-        }
-        return null;
+        return authService.login(request)
+                .flatMap(response -> {
+                    if (response.getToken() != null) {
+                        return Mono.just("redirect:/login-success");
+                    }
+                    return Mono.just("redirect:/login?error=true");
+                });
     }
 
-    private String loginSuccessHandler(
-            HttpServletRequest request,
-            HttpServletResponse response
-    ) {
-        SavedRequest savedRequest = requestCache.getRequest(request, response);
-        if (savedRequest != null) {
-            return "redirect:" + savedRequest.getRedirectUrl();
-        }
-        return "/";
+    @GetMapping("/login-success")
+    public Mono<String> loginSuccessHandler(ServerWebExchange exchange) {
+        return exchange.getSession()
+                .flatMap(session -> {
+                    String redirectUrl = exchange.getRequest().getURI().getPath();
+                    return Mono.justOrEmpty(redirectUrl)
+                            .switchIfEmpty(Mono.just("/"));
+                });
     }
 }

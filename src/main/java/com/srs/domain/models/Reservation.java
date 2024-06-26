@@ -1,9 +1,6 @@
 package com.srs.domain.models;
 
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
+import lombok.*;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.relational.core.mapping.Column;
 import org.springframework.data.relational.core.mapping.Table;
@@ -13,6 +10,7 @@ import java.time.LocalDate;
 import java.time.LocalTime;
 
 @Getter
+@Setter
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
@@ -22,6 +20,9 @@ public class Reservation {
     @Id
     @Column("id")
     private Long id;
+
+    @Column("Username")
+    private String username;
 
     @DateTimeFormat(pattern = "yyyy-MM-dd")
     @Column("reservation_date")

@@ -1,10 +1,11 @@
-package com.srs.service.impl;
+package com.srs.domain.services.impl;
 
-import com.srs.exceptions.CapacityFullException;
-import com.srs.model.Reservation;
-import com.srs.repository.CapacityRepository;
-import com.srs.repository.ReservationRepository;
-import com.srs.service.ReservationService;
+import com.srs.domain.exceptions.CapacityFullException;
+import com.srs.domain.models.AmenityType;
+import com.srs.domain.models.Reservation;
+import com.srs.domain.repositories.CapacityRepository;
+import com.srs.domain.repositories.ReservationRepository;
+import com.srs.domain.services.ReservationService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
@@ -46,7 +47,7 @@ public class ReservationServiceImpl implements ReservationService {
      * @return a Mono containing the ID of the created reservation
      */
     public Mono<Long> createReservation(final Reservation reservation) {
-        return capacityRepository.findByAmenityType(reservation.getAmenityType())
+        return capacityRepository.findByAmenityType(AmenityType.valueOf(reservation.getAmenityType()))
                 .flatMap(capacity -> reservationRepository
                         .findReservationsByReservationDateAndStartTimeBeforeAndEndTimeAfterOrStartTimeBetween(
                                 reservation.getReservationDate(),

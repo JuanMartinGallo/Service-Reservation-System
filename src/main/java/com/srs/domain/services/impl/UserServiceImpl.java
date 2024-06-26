@@ -1,23 +1,22 @@
-package com.srs.service.impl;
+package com.srs.domain.services.impl;
 
-
-import com.srs.model.User;
-import com.srs.repository.UserRepository;
-import com.srs.service.UserService;
+import com.srs.domain.models.User;
+import com.srs.domain.repositories.UserRepository;
+import com.srs.domain.services.UserService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
-import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.web.server.ResponseStatusException;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
+import static com.srs.domain.utils.ApplicationConstants.USER_NOT_FOUND;
+
 @Service
 @RequiredArgsConstructor
 public class UserServiceImpl implements UserService {
 
-    private UserRepository userRepository;
-    private PasswordEncoder passwordEncoder;
+    private final UserRepository userRepository;
 
     /**
      * Retrieves a list of all users.
@@ -38,7 +37,7 @@ public class UserServiceImpl implements UserService {
     @Override
     public Mono<User> getById(final Long id) {
         return userRepository.findById(id)
-                .switchIfEmpty(Mono.error(new ResponseStatusException(HttpStatus.NOT_FOUND, "User not found")));
+                .switchIfEmpty(Mono.error(new ResponseStatusException(HttpStatus.NOT_FOUND, USER_NOT_FOUND)));
     }
 
     /**
@@ -63,7 +62,7 @@ public class UserServiceImpl implements UserService {
     @Override
     public Mono<Void> updateUser(Long id, User user) {
         return userRepository.findById(id)
-                .switchIfEmpty(Mono.error(new ResponseStatusException(HttpStatus.NOT_FOUND, "User not found")))
+                .switchIfEmpty(Mono.error(new ResponseStatusException(HttpStatus.NOT_FOUND, USER_NOT_FOUND)))
                 .flatMap(existingUser -> {
                     existingUser.setUsername(user.getUsername());
                     existingUser.setPassword(user.getPassword());
@@ -84,8 +83,8 @@ public class UserServiceImpl implements UserService {
     @Override
     public Mono<Void> deleteUser(final Long id) {
         return userRepository.findById(id)
-                .switchIfEmpty(Mono.error(new ResponseStatusException(HttpStatus.NOT_FOUND, "User not found")))
-                .flatMap(existingUser -> userRepository.delete(existingUser));
+                .switchIfEmpty(Mono.error(new ResponseStatusException(HttpStatus.NOT_FOUND, USER_NOT_FOUND)))
+                .flatMap(userRepository::delete);
     }
 
     /**
@@ -97,7 +96,7 @@ public class UserServiceImpl implements UserService {
     @Override
     public Mono<User> getUserByUsername(String username) {
         return userRepository.findByUsername(username)
-                .switchIfEmpty(Mono.error(new ResponseStatusException(HttpStatus.NOT_FOUND, "User not found")));
+                .switchIfEmpty(Mono.error(new ResponseStatusException(HttpStatus.NOT_FOUND, USER_NOT_FOUND)));
     }
 
 }
