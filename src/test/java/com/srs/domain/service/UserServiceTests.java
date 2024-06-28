@@ -1,4 +1,4 @@
-//package com.srs.service;
+//package com.srs.domain.repository.service;
 //
 //import com.srs.TestHelper;
 //import com.srs.domain.models.dto.AuthResponse;

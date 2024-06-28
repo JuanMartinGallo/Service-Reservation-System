@@ -1,0 +1,20 @@
+services:
+
+  service-reservation-system:
+    image: srs
+    ports:
+      - "8080:8080"
+    depends_on:
+      - postgres-db
+    environment:
+      - LOGGING_LEVEL: DEBUG
+
+
+  postgres-db:
+    image: postgres:16.3
+    ports:
+      - "5434:5432"
+    environment:
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_USER: postgres
+      POSTGRES_DB: dbtest

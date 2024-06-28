@@ -11,7 +11,7 @@ plugins {
 }
 
 group = 'com.srs'
-version = '1.0.1'
+version = '0.0.1-SNAPSHOT'
 
 java {
     sourceCompatibility = '17'
@@ -32,6 +32,7 @@ dependencies {
 
     // Data
     implementation libs.flywayCore
+    implementation libs.flywayPostgresql
     implementation libs.springBootStarterDataR2dbc
     implementation libs.springJdbc
     runtimeOnly libs.postgresql
@@ -64,6 +65,34 @@ dependencies {
     testImplementation libs.testcontainersJunitJupiter
     testImplementation libs.testcontainersR2dbc
     testImplementation libs.testcontainersPostgresql
+
+    // Security
+    implementation libs.springSecurity
+    testImplementation libs.springSecurityTest
+    implementation libs.springSecurityOauth2ResourceServer
+
+    // JWT
+    implementation libs.jsonWebToken
+}
+
+checkstyle {
+    toolVersion = '10.17.0'
+    configFile = file("${rootDir}/config/checkstyle/checkstyle.xml")
+}
+
+checkstyleMain {
+    source = 'src/main/java'
+}
+
+checkstyleTest {
+    source = 'src/test/java'
+}
+
+tasks.register('checkstyle') {
+    reports {
+        xml.required = false
+        html.required = true
+    }
 }
 
 jacoco {
