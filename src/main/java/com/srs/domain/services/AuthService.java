@@ -6,15 +6,14 @@ import com.srs.domain.models.dto.LoginRequest;
 import com.srs.domain.models.dto.RegisterRequest;
 import com.srs.domain.repositories.UserRepository;
 import lombok.RequiredArgsConstructor;
-import org.springframework.security.authentication.AuthenticationManager;
+import org.springframework.security.authentication.BadCredentialsException;
+import org.springframework.security.authentication.ReactiveAuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.userdetails.ReactiveUserDetailsService;
 import org.springframework.security.core.userdetails.UserDetails;
-import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import reactor.core.publisher.Mono;
-
-import static com.srs.domain.utils.ApplicationUtils.mapToEntity;
 
 @RequiredArgsConstructor
 @Service
@@ -22,46 +21,45 @@ public class AuthService {
 
     private final UserRepository userRepository;
     private final JwtService jwtService;
-    private final AuthenticationManager authenticationManager;
-    private final UserDetailsService userDetailsService;
+    private final ReactiveAuthenticationManager authenticationManager;
+    private final ReactiveUserDetailsService reactiveUserDetailsService;
     private final PasswordEncoder passwordEncoder;
 
-    /**
-     * Authenticates a user's login request and returns an authentication response.
-     *
-     * @param request the login request containing the username and password
-     * @return a Mono emitting the authentication response containing the JWT token
-     */
     public Mono<AuthResponse> login(LoginRequest request) {
-        return Mono.fromCallable(() -> {
-            authenticationManager.authenticate(
-                    new UsernamePasswordAuthenticationToken(
-                            request.getUsername(),
-                            request.getPassword()
-                    )
-            );
-            UserDetails user = userDetailsService.loadUserByUsername(request.getUsername());
-            String token = String.valueOf(jwtService.getToken(user));
-            return AuthResponse.builder().token(token).build();
-        });
+        return Mono.defer(() ->
+                authenticationManager.authenticate(
+                                new UsernamePasswordAuthenticationToken(
+                                        request.getUsername(),
+                                        request.getPassword()
+                                )
+                        )
+                        .flatMap(auth -> {
+                            UserDetails user = (UserDetails) auth.getPrincipal();
+                            String token = String.valueOf(jwtService.getToken(user));
+                            return Mono.just(AuthResponse.builder().token(token).build());
+                        })
+                        .onErrorResume(e -> Mono.error(new BadCredentialsException("Invalid credentials")))
+        );
     }
 
-    /**
-     * Registers a new user and returns an authentication response.
-     *
-     * @param request the registration request containing user details
-     * @return a Mono emitting the authentication response with a generated token
-     */
     public Mono<AuthResponse> register(RegisterRequest request) {
-        return Mono.fromCallable(() -> {
+        return Mono.defer(() -> {
             User user = mapToEntity(request);
             user.setPassword(passwordEncoder.encode(request.getPassword()));
-
-            userRepository.save(user);
-
-            String token = String.valueOf(jwtService.getToken(user));
-            return AuthResponse.builder().token(token).build();
+            return userRepository.save(user)
+                    .flatMap(savedUser -> {
+                        String token = String.valueOf(jwtService.getToken(savedUser));
+                        return Mono.just(AuthResponse.builder().token(token).build());
+                    });
         });
     }
-}
 
+    private User mapToEntity(RegisterRequest request) {
+        User user = new User();
+        user.setFullname(request.getFullname());
+        user.setUsername(request.getUsername());
+        user.setCountry(request.getCountry());
+        user.setPassword(request.getPassword());
+        return user;
+    }
+}

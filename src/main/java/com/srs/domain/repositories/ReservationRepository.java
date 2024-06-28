@@ -25,5 +25,5 @@ public interface ReservationRepository extends R2dbcRepository<Reservation, Long
             LocalTime betweenEnd
     );
 
-    Mono<Reservation> findReservationByReservationName(String reservationName);
+    Mono<Reservation> findReservationByReservationDate(String reservationDate);
 }

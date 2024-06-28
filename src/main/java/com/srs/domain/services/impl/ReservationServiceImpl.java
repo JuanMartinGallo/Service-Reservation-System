@@ -101,11 +101,11 @@ public class ReservationServiceImpl implements ReservationService {
     /**
      * Retrieves a reservation based on the reservation name.
      *
-     * @param reservationName the name of the reservation to retrieve
+     * @param reservationDate the name of the reservation to retrieve
      * @return a Mono containing the reservation with the specified name
      */
     @Override
-    public Mono<Reservation> getReservationByReservationName(String reservationName) {
-        return reservationRepository.findReservationByReservationName(reservationName);
+    public Mono<Reservation> getReservationByReservationDate(String reservationDate) {
+        return reservationRepository.findReservationByReservationDate(reservationDate);
     }
 }

@@ -17,5 +17,5 @@ public interface ReservationService {
 
     Mono<Void> deleteReservation(final Long id);
 
-    Mono<Reservation> getReservationByReservationName(String reservationName);
+    Mono<Reservation> getReservationByReservationDate(String reservationDate);
 }

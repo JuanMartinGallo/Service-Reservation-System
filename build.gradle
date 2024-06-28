@@ -11,7 +11,7 @@ plugins {
 }
 
 group = 'com.srs'
-version = '1.0.1'
+version = '0.0.1-SNAPSHOT'
 
 java {
     sourceCompatibility = '17'
@@ -32,6 +32,7 @@ dependencies {
 
     // Data
     implementation libs.flywayCore
+    implementation libs.flywayPostgresql
     implementation libs.springBootStarterDataR2dbc
     implementation libs.springJdbc
     runtimeOnly libs.postgresql
@@ -68,6 +69,7 @@ dependencies {
     // Security
     implementation libs.springSecurity
     testImplementation libs.springSecurityTest
+    implementation libs.springSecurityOauth2ResourceServer
 
     // JWT
     implementation libs.jsonWebToken

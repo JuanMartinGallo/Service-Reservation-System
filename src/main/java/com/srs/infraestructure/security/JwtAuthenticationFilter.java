@@ -1,72 +1,65 @@
 package com.srs.infraestructure.security;
 
 import com.srs.domain.services.JwtService;
-import jakarta.servlet.FilterChain;
-import jakarta.servlet.ServletException;
-import jakarta.servlet.http.HttpServletRequest;
-import jakarta.servlet.http.HttpServletResponse;
-import lombok.AllArgsConstructor;
+import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpHeaders;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
-import org.springframework.security.core.context.SecurityContextHolder;
-import org.springframework.security.core.userdetails.UserDetails;
-import org.springframework.security.core.userdetails.UserDetailsService;
-import org.springframework.security.web.authentication.WebAuthenticationDetailsSource;
+import org.springframework.security.core.context.ReactiveSecurityContextHolder;
+import org.springframework.security.core.userdetails.ReactiveUserDetailsService;
 import org.springframework.stereotype.Component;
 import org.springframework.util.StringUtils;
-import org.springframework.web.filter.OncePerRequestFilter;
-
-import java.io.IOException;
+import org.springframework.web.server.ServerWebExchange;
+import org.springframework.web.server.WebFilter;
+import org.springframework.web.server.WebFilterChain;
+import reactor.core.publisher.Mono;
 
 @Component
-@AllArgsConstructor
-public class JwtAuthenticationFilter extends OncePerRequestFilter {
+@RequiredArgsConstructor
+public class JwtAuthenticationFilter implements WebFilter {
 
     private final JwtService jwtService;
-    private final UserDetailsService userDetailsService;
+    private final ReactiveUserDetailsService reactiveUserDetailsService;
 
     @Override
-    protected void doFilterInternal(
-            HttpServletRequest request,
-            HttpServletResponse response,
-            FilterChain filterChain
-    ) throws ServletException, IOException {
-        final String token = getTokenFromRequest(request);
-        final String username;
-
+    public Mono<Void> filter(ServerWebExchange exchange, WebFilterChain chain) {
+        String token = getTokenFromRequest(exchange);
         if (token == null) {
-            filterChain.doFilter(request, response);
-            return;
+            return chain.filter(exchange);
         }
 
-        username = jwtService.getUsernameFromToken(token);
+        return jwtService.getUsernameFromToken(token)
+                .flatMap(username -> {
+                    if (username != null) {
+                        return ReactiveSecurityContextHolder.getContext()
+                                .flatMap(securityContext -> {
+                                    if (securityContext.getAuthentication() == null) {
+                                        return reactiveUserDetailsService.findByUsername(username)
+                                                .flatMap(userDetails -> jwtService.isTokenValid(token, userDetails)
+                                                        .filter(valid -> valid)
+                                                        .flatMap(valid -> {
+                                                            UsernamePasswordAuthenticationToken authToken = new UsernamePasswordAuthenticationToken(
+                                                                    userDetails,
+                                                                    null,
+                                                                    userDetails.getAuthorities()
+                                                            );
 
-        if (
-                username != null &&
-                        SecurityContextHolder.getContext().getAuthentication() == null
-        ) {
-            UserDetails userDetails = userDetailsService.loadUserByUsername(username);
-
-            if (jwtService.isTokenValid(token, userDetails)) {
-                UsernamePasswordAuthenticationToken authToken = new UsernamePasswordAuthenticationToken(
-                        userDetails,
-                        null,
-                        userDetails.getAuthorities()
-                );
-                authToken.setDetails(
-                        new WebAuthenticationDetailsSource().buildDetails(request)
-                );
-
-                SecurityContextHolder.getContext().setAuthentication(authToken);
-            }
-        }
-
-        filterChain.doFilter(request, response);
+                                                            return Mono.deferContextual(ctx -> Mono.just(ReactiveSecurityContextHolder.withAuthentication(authToken)))
+                                                                    .then(chain.filter(exchange));
+                                                        }));
+                                    } else {
+                                        return chain.filter(exchange);
+                                    }
+                                });
+                    } else {
+                        return chain.filter(exchange);
+                    }
+                })
+                .switchIfEmpty(chain.filter(exchange));
     }
 
-    private String getTokenFromRequest(HttpServletRequest request) {
-        final String authHeader = request.getHeader(HttpHeaders.AUTHORIZATION);
 
+    private String getTokenFromRequest(ServerWebExchange exchange) {
+        String authHeader = exchange.getRequest().getHeaders().getFirst(HttpHeaders.AUTHORIZATION);
         if (StringUtils.hasText(authHeader) && authHeader.startsWith("Bearer ")) {
             return authHeader.substring(7);
         }

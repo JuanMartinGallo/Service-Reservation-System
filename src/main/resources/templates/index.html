@@ -1,19 +1,19 @@
 <!DOCTYPE HTML>
-<html xmlns="http://www.w3.org/1999/xhtml" xmlns:th="https://www.thymeleaf.org"
-    xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
+<html lang="" xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:th="https://www.thymeleaf.org">
 
 <head>
-    <meta charset="UTF-8" />
+    <meta charset="UTF-8"/>
     <title>Amenities Reservation App</title>
 
-    <link th:rel="stylesheet" th:href="@{/webjars/bootstrap/5.3.2/css/bootstrap.min.css} " />
+    <link th:href="@{/webjars/bootstrap/5.3.2/css/bootstrap.min.css} " th:rel="stylesheet"/>
 </head>
 
 <body>
 
-    <div>
-        <div th:insert="~{fragments/nav :: nav}"></div>
-        <div class="text-light" style="background-image: url('https://source.unsplash.com/1920x1080/?nature');
+<div>
+    <div th:insert="~{fragments/nav :: nav}"></div>
+    <div class="text-light" style="background-image: url('https://source.unsplash.com/1920x1080/?nature');
                                    position: absolute;
                                    left: 0;
                                    top: 0;
@@ -21,19 +21,19 @@
                                    z-index: -1;
                                    min-height: 100vh;
                                    min-width: 100vw;">
-        </div>
-
-        <div class="container" style="padding-top: 20vh; display: flex; flex-direction: column; align-items: center;">
-            <h1 class="display-3">Reservation management made easy.</h1>
-            <p class="lead">Lorem, ipsum dolor sit amet consectetur adipisicing elit.
-                Numquam in quia natus magnam ducimus quas molestias velit vero maiores.
-                Eaque sunt laudantium voluptas. Fugiat molestiae ipsa delectus iusto vel quod.</p>
-            <a href="/reservations" class="btn btn-success btn-lg my-2">Reserve an Amenity</a>
-        </div>
     </div>
 
-    <script th:src="@{/webjars/popper.js/2.11.7/umd/popper.min.js}"></script>
-    <script th:src="@{/webjars/bootstrap/5.3.2/js/bootstrap.min.js}"></script>
+    <div class="container" style="padding-top: 20vh; display: flex; flex-direction: column; align-items: center;">
+        <h1 class="display-3">Reservation management made easy.</h1>
+        <p class="lead">Lorem, ipsum dolor sit amet consectetur adipisicing elit.
+            Numquam in quia natus magnam ducimus quas molestias velit vero maiores.
+            Eaque sunt laudantium voluptas. Fugiat molestiae ipsa delectus iusto vel quod.</p>
+        <a class="btn btn-success btn-lg my-2" href="/reservations">Reserve an Amenity</a>
+    </div>
+</div>
+
+<script th:src="@{/webjars/popper.js/2.11.7/umd/popper.min.js}"></script>
+<script th:src="@{/webjars/bootstrap/5.3.2/js/bootstrap.min.js}"></script>
 
 
 </body>

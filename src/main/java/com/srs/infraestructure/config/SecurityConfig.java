@@ -1,11 +1,14 @@
 package com.srs.infraestructure.config;
 
 import com.srs.domain.repositories.UserRepository;
+import com.srs.domain.utils.LoginSuccessMessage;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.http.HttpMethod;
 import org.springframework.security.authentication.ReactiveAuthenticationManager;
 import org.springframework.security.authentication.UserDetailsRepositoryReactiveAuthenticationManager;
+import org.springframework.security.config.annotation.method.configuration.EnableReactiveMethodSecurity;
 import org.springframework.security.config.annotation.web.reactive.EnableWebFluxSecurity;
 import org.springframework.security.config.web.server.SecurityWebFiltersOrder;
 import org.springframework.security.config.web.server.ServerHttpSecurity;
@@ -19,6 +22,7 @@ import org.springframework.security.web.server.authentication.AuthenticationWebF
 import org.springframework.security.web.server.authentication.RedirectServerAuthenticationEntryPoint;
 import org.springframework.security.web.server.authentication.ServerAuthenticationSuccessHandler;
 import org.springframework.security.web.server.authentication.WebFilterChainServerAuthenticationSuccessHandler;
+import org.springframework.security.web.server.authentication.logout.RedirectServerLogoutSuccessHandler;
 import org.springframework.security.web.server.savedrequest.NoOpServerRequestCache;
 import org.springframework.security.web.server.savedrequest.ServerRequestCache;
 import org.springframework.security.web.server.util.matcher.ServerWebExchangeMatchers;
@@ -26,44 +30,13 @@ import reactor.core.publisher.Mono;
 
 import static com.srs.domain.utils.ApplicationConstants.USER_NOT_FOUND;
 
-@EnableWebFluxSecurity
-@RequiredArgsConstructor
 @Configuration
-public class ApplicationConfig {
+@EnableWebFluxSecurity
+@EnableReactiveMethodSecurity
+@RequiredArgsConstructor
+public class SecurityConfig {
 
     private final UserRepository userRepository;
-
-    @Bean
-    public ReactiveAuthenticationManager authenticationManager(ReactiveUserDetailsService userDetailsService,
-                                                               PasswordEncoder passwordEncoder) {
-        UserDetailsRepositoryReactiveAuthenticationManager manager =
-                new UserDetailsRepositoryReactiveAuthenticationManager(userDetailsService);
-        manager.setPasswordEncoder(passwordEncoder);
-        return manager;
-    }
-
-    @Bean
-    public ReactiveUserDetailsService userDetailsService() {
-        return username -> userRepository
-                .findByUsername(username)
-                .switchIfEmpty(Mono.error(new UsernameNotFoundException(USER_NOT_FOUND)))
-                .cast(UserDetails.class);
-    }
-
-    @Bean
-    public PasswordEncoder passwordEncoder() {
-        return new BCryptPasswordEncoder();
-    }
-
-    @Bean
-    public ServerRequestCache requestCache() {
-        return NoOpServerRequestCache.getInstance();
-    }
-
-    @Bean
-    public ServerAuthenticationSuccessHandler authenticationSuccessHandler() {
-        return new WebFilterChainServerAuthenticationSuccessHandler();
-    }
 
     @Bean
     public SecurityWebFilterChain securityWebFilterChain(ServerHttpSecurity http,
@@ -74,13 +47,59 @@ public class ApplicationConfig {
         authenticationWebFilter.setAuthenticationSuccessHandler(authenticationSuccessHandler());
 
         return http
-                .authorizeExchange(exchange -> exchange
-                        .pathMatchers("/login").permitAll()
-                        .anyExchange().authenticated())
+                .authorizeExchange(exchanges -> exchanges
+                        .pathMatchers(HttpMethod.GET, "/", "/index", "/home").permitAll()
+                        .pathMatchers("/auth/**", "/h2-console/**", "/login").permitAll()
+                        .anyExchange().authenticated()
+                )
                 .addFilterAt(authenticationWebFilter, SecurityWebFiltersOrder.AUTHENTICATION)
-                .exceptionHandling(exceptionHandlingSpec -> exceptionHandlingSpec.authenticationEntryPoint(redirectServerAuthenticationEntryPoint(requestCache)))
+                .formLogin(form -> form
+                        .loginPage("/login")
+                        .authenticationSuccessHandler(loginSuccessMessage())
+                        .authenticationFailureHandler((exchange, exception) -> Mono.empty())
+                )
+                .logout(logout -> logout
+                        .logoutUrl("/logout")
+                        .logoutSuccessHandler(new RedirectServerLogoutSuccessHandler())
+                )
+                .exceptionHandling(exceptions -> exceptions
+                        .authenticationEntryPoint(redirectServerAuthenticationEntryPoint(requestCache))
+                )
                 .csrf(ServerHttpSecurity.CsrfSpec::disable)
                 .build();
+    }
+
+    @Bean
+    public LoginSuccessMessage loginSuccessMessage() {
+        return new LoginSuccessMessage();
+    }
+
+    @Bean
+    public PasswordEncoder passwordEncoder() {
+        return new BCryptPasswordEncoder();
+    }
+
+    @Bean
+    public ReactiveUserDetailsService reactiveUserDetailsService() {
+        return username -> userRepository
+                .findByUsername(username)
+                .switchIfEmpty(Mono.error(new UsernameNotFoundException(USER_NOT_FOUND)))
+                .cast(UserDetails.class);
+    }
+
+    @Bean
+    public ReactiveAuthenticationManager authenticationManager(ReactiveUserDetailsService userDetailsService) {
+        return new UserDetailsRepositoryReactiveAuthenticationManager(userDetailsService);
+    }
+
+    @Bean
+    public ServerRequestCache requestCache() {
+        return NoOpServerRequestCache.getInstance();
+    }
+
+    @Bean
+    public ServerAuthenticationSuccessHandler authenticationSuccessHandler() {
+        return new WebFilterChainServerAuthenticationSuccessHandler();
     }
 
     @Bean

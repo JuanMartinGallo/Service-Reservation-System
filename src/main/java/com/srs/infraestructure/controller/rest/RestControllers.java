@@ -27,15 +27,15 @@ public class RestControllers {
 
         return userRepository.existsByUsername(request.getUsername())
                 .flatMap(exists -> {
-                    if (exists) {
-                        AuthResponse message = new AuthResponse("Username is taken!");
+                    if (Boolean.TRUE.equals(exists)) {
+                        AuthResponse message = AuthResponse.builder().token("Username already exists").build();
                         return ServerResponse.status(HttpStatus.BAD_REQUEST).bodyValue(message);
                     } else {
                         return authService.register(request)
                                 .flatMap(authResponse -> ServerResponse.ok().bodyValue(authResponse))
-                                .onErrorResume(e -> ServerResponse.status(HttpStatus.BAD_REQUEST).build());
+                                .onErrorResume(e -> ServerResponse.status(HttpStatus.INTERNAL_SERVER_ERROR).build());
                     }
-                })
-                .switchIfEmpty(ServerResponse.status(HttpStatus.BAD_REQUEST).build());
+                });
     }
+
 }

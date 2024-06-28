@@ -36,6 +36,7 @@ jacksonDatatypeJsr310 = { module = "com.fasterxml.jackson.datatype:jackson-datat
 
 # Data
 flywayCore = { module = "org.flywaydb:flyway-core", version.ref = "flyway" }
+flywayPostgresql = { module = "org.flywaydb:flyway-database-postgresql", version.ref = "flyway" }
 postgresql = { module = "org.postgresql:postgresql", version.ref = "postgresqlJdbc" }
 r2dbcPostgresql = { module = "org.postgresql:r2dbc-postgresql", version.ref = "postgresqlR2dbc" }
 
@@ -68,6 +69,8 @@ testcontainersR2dbc = { module = "org.testcontainers:r2dbc", version.ref = "test
 springSecurity = { module = "org.springframework.boot:spring-boot-starter-security", version.ref = "springSecurity" }
 springSecurityTest = { module = "org.springframework.security:spring-security-test", version.ref = "springSecurityTest" }
 jsonWebToken = { module = "io.jsonwebtoken:jjwt", version.ref = "jsonWebToken" }
+springSecurityOauth2ResourceServer = { module = "org.springframework.boot:spring-boot-starter-oauth2-resource-server", version.ref = "springSecurity" }
+
 
 
 [plugins]

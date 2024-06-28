@@ -23,28 +23,21 @@ import java.util.Set;
 @Table("users")
 public class User implements UserDetails {
 
+    @Transient
+    private final Set<Reservation> reservations = new HashSet<>();
     @Id
     @Column("id")
     private Long id;
-
     @Column("fullname")
     private String fullname;
-
     @Column("username")
     private String username;
-
     @Column("country")
     private String country;
-
     @Column("password")
     private String password;
-
     @Column("role")
     private String role;
-
-    @Transient
-    private Set<Reservation> reservations = new HashSet<>();
-
     @Column("date_created")
     private OffsetDateTime dateCreated;
 
