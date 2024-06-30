@@ -48,7 +48,7 @@ public class SecurityConfig {
 
         return http
                 .authorizeExchange(exchanges -> exchanges
-                        .pathMatchers(HttpMethod.GET, "/", "/index", "/home").permitAll()
+                        .pathMatchers(HttpMethod.GET, "/", "/index", "/home", "/webjars/**", "/css/**", "/js/**", "/images/**").permitAll()
                         .pathMatchers("/auth/**", "/h2-console/**", "/login").permitAll()
                         .anyExchange().authenticated()
                 )

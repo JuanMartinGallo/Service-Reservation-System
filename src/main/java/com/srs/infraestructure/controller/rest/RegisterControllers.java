@@ -14,7 +14,7 @@ import reactor.core.publisher.Mono;
 
 @RestController
 @RequiredArgsConstructor
-public class RestControllers {
+public class RegisterControllers {
 
     private final AuthService authService;
     private final UserRepository userRepository;

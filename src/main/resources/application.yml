@@ -4,6 +4,13 @@ spring:
     name: "service-reservation-system"
     main:
       web-application-type: reactive
+  resources:
+    static-locations: classpath:/META-INF/resources/,classpath:/resources/,classpath:/static/,classpath:/public/
+  devtools:
+    restart:
+      enabled: true
+    livereload:
+      enabled: true
 
   r2dbc:
     url: "r2dbc:postgresql://postgres-db:5432/dbtest"
@@ -19,6 +26,10 @@ spring:
   thymeleaf:
     reactive:
       enabled: true
+      cache: false
+      prefix: classpath:/templates/
+      suffix: .html
+      mode: HTML5
 
 # SpringDoc Configuration - OpenAPI 3.0 Documentation & Swagger UI
 springdoc:
