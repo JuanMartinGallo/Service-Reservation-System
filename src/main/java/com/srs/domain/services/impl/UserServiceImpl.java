@@ -1,22 +1,26 @@
 package com.srs.domain.services.impl;
 
 import com.srs.domain.models.User;
+import com.srs.domain.models.dto.RegisterRequest;
 import com.srs.domain.repositories.UserRepository;
 import com.srs.domain.services.UserService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.web.server.ResponseStatusException;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
 import static com.srs.domain.utils.ApplicationConstants.USER_NOT_FOUND;
+import static com.srs.domain.utils.ApplicationUtils.mapToEntity;
 
 @Service
 @RequiredArgsConstructor
 public class UserServiceImpl implements UserService {
 
     private final UserRepository userRepository;
+    private final PasswordEncoder passwordEncoder;
 
     /**
      * Retrieves a list of all users.
@@ -99,4 +103,15 @@ public class UserServiceImpl implements UserService {
                 .switchIfEmpty(Mono.error(new ResponseStatusException(HttpStatus.NOT_FOUND, USER_NOT_FOUND)));
     }
 
+    /**
+     * Saves a user by creating a new user entity from the given register request and encoding the password.
+     *
+     * @param request the register request containing user information
+     * @return a Mono containing the saved user entity
+     */
+    public Mono<User> saveUser(RegisterRequest request) {
+        User user = mapToEntity(request);
+        user.setPassword(passwordEncoder.encode(request.getPassword()));
+        return userRepository.save(user);
+    }
 }

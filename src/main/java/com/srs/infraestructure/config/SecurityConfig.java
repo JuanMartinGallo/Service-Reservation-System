@@ -88,7 +88,7 @@ public class SecurityConfig {
     }
 
     @Bean
-    public ReactiveAuthenticationManager authenticationManager(ReactiveUserDetailsService userDetailsService) {
+    public ReactiveAuthenticationManager reactiveAuthenticationManager(ReactiveUserDetailsService userDetailsService) {
         return new UserDetailsRepositoryReactiveAuthenticationManager(userDetailsService);
     }
 

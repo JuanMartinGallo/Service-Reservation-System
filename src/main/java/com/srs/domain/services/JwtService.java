@@ -6,8 +6,8 @@ import io.jsonwebtoken.JwtException;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.io.Decoders;
 import io.jsonwebtoken.security.Keys;
-import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Service;
 import reactor.core.publisher.Mono;
@@ -23,12 +23,17 @@ import java.util.function.Function;
 import static com.srs.domain.utils.ApplicationConstants.USER_NOT_FOUND;
 
 @Slf4j
-@RequiredArgsConstructor
 @Service
 public class JwtService {
 
-    private static final String SECRET_KEY = "586E3272357538782F413F4428472B4B6250655368566B597033733676397924";
     private final UserRepository userRepository;
+
+    @Value("${jwt.secret.key}")
+    private String secretKey;
+
+    public JwtService(UserRepository userRepository) {
+        this.userRepository = userRepository;
+    }
 
     /**
      * Generates a token for the given user.
@@ -39,15 +44,15 @@ public class JwtService {
     public Mono<String> getToken(UserDetails user) {
         return userRepository.existsByUsername(user.getUsername())
                 .flatMap(exists -> {
-                    if (exists) {
+                    if (Boolean.TRUE.equals(exists)) {
                         return Mono.just(generateToken(new HashMap<>(), user));
                     } else {
                         return Mono.error(new JwtException(USER_NOT_FOUND));
                     }
                 })
                 .onErrorResume(e -> {
-                    log.error(e.getMessage());
-                    return Mono.just("");
+                    log.error("Error generating token: {}", e.getMessage());
+                    return Mono.error(new JwtException("Error generating token", e));
                 });
     }
 
@@ -75,7 +80,7 @@ public class JwtService {
      * @return The generated key.
      */
     private SecretKey getKey() {
-        byte[] keyBytes = Decoders.BASE64.decode(SECRET_KEY);
+        byte[] keyBytes = Decoders.BASE64.decode(secretKey);
         return Keys.hmacShaKeyFor(keyBytes);
     }
 
@@ -86,7 +91,11 @@ public class JwtService {
      * @return the username retrieved from the token
      */
     public Mono<String> getUsernameFromToken(String token) {
-        return getClaim(token, Claims::getSubject);
+        return getClaim(token, Claims::getSubject)
+                .onErrorResume(e -> {
+                    log.error("Error extracting username from token: {}", e.getMessage());
+                    return Mono.error(new JwtException("Error extracting username from token", e));
+                });
     }
 
     /**

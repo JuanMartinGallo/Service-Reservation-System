@@ -3,7 +3,7 @@ aspectj = "1.9.22.1"
 benManesVersions = "0.51.0"
 dependencyCheck = "9.2.0"
 dependencyManagement = "1.1.5"
-flyway = "10.15.0"
+flyway = "10.15.2"
 jackson = "2.17.1"
 jsonWebToken = "0.12.6"
 lombok = "1.18.34"
@@ -15,32 +15,28 @@ springAspects = "6.1.10"
 springBoot = "3.3.1"
 springSecurity = "6.3.1"
 springSecurityTest = "6.3.1"
-springdoc = "2.5.0"
+springdoc = "2.6.0"
 testcontainers = "1.19.8"
 testng = "7.10.2"
 thymeleaf = "3.1.2.RELEASE"
 thymeleafLayoutDialect = "3.3.0"
 versionCatalogUpdate = "0.8.4"
 webjarsBootstrap = "5.3.3"
+webjarsJquery = "3.7.1"
 webjarsLocator = "0.52"
 webjarsPopper = "2.11.7"
-webjarsJquery = "3.7.1"
 
 [libraries]
-
 # Resilience
 aspectjrt = { module = "org.aspectj:aspectjrt", version.ref = "aspectj" }
 aspectjweaver = { module = "org.aspectj:aspectjweaver", version.ref = "aspectj" }
-
 # Data
 flywayCore = { module = "org.flywaydb:flyway-core", version.ref = "flyway" }
 flywayPostgresql = { module = "org.flywaydb:flyway-database-postgresql", version.ref = "flyway" }
-
 # JSON
 jacksonDatabind = { module = "com.fasterxml.jackson.core:jackson-databind", version.ref = "jackson" }
 jacksonDatatypeJsr310 = { module = "com.fasterxml.jackson.datatype:jackson-datatype-jsr310", version.ref = "jackson" }
 jsonWebToken = { module = "io.jsonwebtoken:jjwt", version.ref = "jsonWebToken" }
-
 # Lombok
 lombok = { module = "org.projectlombok:lombok", version.ref = "lombok" }
 postgresql = { module = "org.postgresql:postgresql", version.ref = "postgresqlJdbc" }
@@ -54,38 +50,33 @@ springBootStarterTest = { module = "org.springframework.boot:spring-boot-starter
 springBootStarterValidation = { module = "org.springframework.boot:spring-boot-starter-validation", version.ref = "springBoot" }
 springBootStarterWebflux = { module = "org.springframework.boot:spring-boot-starter-webflux", version.ref = "springBoot" }
 springBootTestcontainers = { module = "org.springframework.boot:spring-boot-testcontainers", version.ref = "springBoot" }
+springDevtools = { module = "org.springframework.boot:spring-boot-devtools", version.ref = "springBoot" }
 springJdbc = { module = "org.springframework:spring-jdbc" }
 springRetry = { module = "org.springframework.retry:spring-retry" }
 springSecurity = { module = "org.springframework.boot:spring-boot-starter-security", version.ref = "springBoot" }
 springSecurityConfig = { module = "org.springframework.security:spring-security-config", version.ref = "springSecurity" }
 springSecurityCore = { module = "org.springframework.security:spring-security-core", version.ref = "springSecurity" }
 springSecurityOauth2ResourceServer = { module = "org.springframework.boot:spring-boot-starter-oauth2-resource-server", version.ref = "springBoot" }
-springDevtools = { module = "org.springframework.boot:spring-boot-devtools", version.ref = "springBoot" }
-
 # Security
 springSecurityTest = { module = "org.springframework.security:spring-security-test", version.ref = "springSecurityTest" }
 springSecurityWeb = { module = "org.springframework.security:spring-security-web", version.ref = "springSecurity" }
-
-
+springThymeleaf = { module = "org.springframework.boot:spring-boot-starter-thymeleaf", version.ref = "springBoot" }
 # Documentation
 springdocOpenapiStarterWebfluxUi = { module = "org.springdoc:springdoc-openapi-starter-webflux-ui", version.ref = "springdoc" }
-
 # Integration Testing
 testcontainersJunitJupiter = { module = "org.testcontainers:junit-jupiter", version.ref = "testcontainers" }
 testcontainersPostgresql = { module = "org.testcontainers:postgresql", version.ref = "testcontainers" }
 testcontainersR2dbc = { module = "org.testcontainers:r2dbc", version.ref = "testcontainers" }
 testng = { module = "org.testng:testng", version.ref = "testng" }
-
 # Frontend
 thymeleaf = { module = "org.thymeleaf:thymeleaf", version.ref = "thymeleaf" }
-springThymeleaf = { module = "org.springframework.boot:spring-boot-starter-thymeleaf", version.ref = "springBoot" }
-thymeleafSpring6 = { module = "org.thymeleaf:thymeleaf-spring6", version.ref = "thymeleaf" }
-thymeleafLayoutDialect = { module = "nz.net.ultraq.thymeleaf:thymeleaf-layout-dialect", version.ref = "thymeleafLayoutDialect" }
 thymeleafExtrasSpringsecurity6 = { module = "org.thymeleaf.extras:thymeleaf-extras-springsecurity6", version.ref = "thymeleaf" }
+thymeleafLayoutDialect = { module = "nz.net.ultraq.thymeleaf:thymeleaf-layout-dialect", version.ref = "thymeleafLayoutDialect" }
+thymeleafSpring6 = { module = "org.thymeleaf:thymeleaf-spring6", version.ref = "thymeleaf" }
 webjarsBootstrap = { module = "org.webjars:bootstrap", version.ref = "webjarsBootstrap" }
+webjarsJquery = { module = "org.webjars:jquery", version.ref = "webjarsJquery" }
 webjarsLocator = { module = "org.webjars:webjars-locator", version.ref = "webjarsLocator" }
 webjarsPopper = { module = "org.webjars:popper.js", version.ref = "webjarsPopper" }
-webjarsJquery = { module = "org.webjars:jquery", version.ref = "webjarsJquery" }
 
 [plugins]
 benManesVersions = { id = "com.github.ben-manes.versions", version.ref = "benManesVersions" }

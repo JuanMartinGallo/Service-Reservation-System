@@ -24,7 +24,7 @@ public class HomeController {
     private final ReservationService reservationService;
 
     @GetMapping({"/", "/index", "/home"})
-    public Mono<String> home(ServerWebExchange exchange, Model model) {
+    public Mono<String> home() {
         return Mono.just("index");
     }
 

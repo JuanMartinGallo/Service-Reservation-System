@@ -9,4 +9,6 @@ import reactor.core.publisher.Mono;
 @Repository
 public interface CapacityRepository extends R2dbcRepository<Capacity, Long> {
     Mono<Capacity> findByAmenityType(AmenityType amenityType);
+
+    Mono<Boolean> existsByAmenityType(AmenityType amenityType);
 }
