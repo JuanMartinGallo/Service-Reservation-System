@@ -5,7 +5,6 @@ import com.srs.domain.models.dto.LoginRequest;
 import com.srs.domain.models.dto.RegisterRequest;
 import com.srs.domain.services.impl.UserServiceImpl;
 import lombok.RequiredArgsConstructor;
-import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.authentication.ReactiveAuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.userdetails.ReactiveUserDetailsService;
@@ -14,12 +13,12 @@ import org.springframework.security.oauth2.jwt.JwtException;
 import org.springframework.stereotype.Service;
 import reactor.core.publisher.Mono;
 
-@RequiredArgsConstructor
 @Service
+@RequiredArgsConstructor
 public class AuthService {
 
     private final JwtService jwtService;
-    private final ReactiveAuthenticationManager authenticationManager;
+    private final ReactiveAuthenticationManager reactiveAuthenticationManager;
     private final ReactiveUserDetailsService reactiveUserDetailsService;
     private final UserServiceImpl userService;
 
@@ -28,7 +27,7 @@ public class AuthService {
             return Mono.error(new IllegalArgumentException("Username or password cannot be null"));
         }
 
-        return authenticationManager.authenticate(
+        return reactiveAuthenticationManager.authenticate(
                         new UsernamePasswordAuthenticationToken(
                                 request.getUsername(),
                                 request.getPassword()
@@ -39,7 +38,7 @@ public class AuthService {
                     return jwtService.getToken(user)
                             .map(token -> AuthResponse.builder().token(token).build());
                 })
-                .onErrorResume(e -> Mono.error(new BadCredentialsException("Invalid credentials", e)));
+                .onErrorResume(e -> Mono.just(AuthResponse.builder().token("Invalid username or password").build()));
     }
 
     public Mono<AuthResponse> register(RegisterRequest request) {

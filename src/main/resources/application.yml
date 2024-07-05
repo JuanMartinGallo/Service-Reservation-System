@@ -45,7 +45,8 @@ logging:
   pattern:
     level: "%5p [${spring.application.name:},%X{traceId:-},%X{spanId:-}]"
   level:
-    com.srs: INFO
+    com.srs: DEBUG
+    org.springframework.security: DEBUG
 
 # Server Configuration
 server:

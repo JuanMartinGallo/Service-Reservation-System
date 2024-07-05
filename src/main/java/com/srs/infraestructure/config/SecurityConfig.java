@@ -1,11 +1,12 @@
 package com.srs.infraestructure.config;
 
 import com.srs.domain.repositories.UserRepository;
-import com.srs.domain.utils.LoginSuccessMessage;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.HttpMethod;
+import org.springframework.http.HttpStatus;
 import org.springframework.security.authentication.ReactiveAuthenticationManager;
 import org.springframework.security.authentication.UserDetailsRepositoryReactiveAuthenticationManager;
 import org.springframework.security.config.annotation.method.configuration.EnableReactiveMethodSecurity;
@@ -20,13 +21,16 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.server.SecurityWebFilterChain;
 import org.springframework.security.web.server.authentication.AuthenticationWebFilter;
 import org.springframework.security.web.server.authentication.RedirectServerAuthenticationEntryPoint;
+import org.springframework.security.web.server.authentication.ServerAuthenticationFailureHandler;
 import org.springframework.security.web.server.authentication.ServerAuthenticationSuccessHandler;
-import org.springframework.security.web.server.authentication.WebFilterChainServerAuthenticationSuccessHandler;
 import org.springframework.security.web.server.authentication.logout.RedirectServerLogoutSuccessHandler;
 import org.springframework.security.web.server.savedrequest.NoOpServerRequestCache;
 import org.springframework.security.web.server.savedrequest.ServerRequestCache;
 import org.springframework.security.web.server.util.matcher.ServerWebExchangeMatchers;
+import org.springframework.web.server.ServerWebExchange;
 import reactor.core.publisher.Mono;
+
+import java.net.URI;
 
 import static com.srs.domain.utils.ApplicationConstants.USER_NOT_FOUND;
 
@@ -34,29 +38,31 @@ import static com.srs.domain.utils.ApplicationConstants.USER_NOT_FOUND;
 @EnableWebFluxSecurity
 @EnableReactiveMethodSecurity
 @RequiredArgsConstructor
+@Slf4j
 public class SecurityConfig {
 
     private final UserRepository userRepository;
 
     @Bean
     public SecurityWebFilterChain securityWebFilterChain(ServerHttpSecurity http,
-                                                         ReactiveAuthenticationManager authenticationManager,
+                                                         ReactiveAuthenticationManager reactiveAuthenticationManager,
                                                          ServerRequestCache requestCache) {
-        AuthenticationWebFilter authenticationWebFilter = new AuthenticationWebFilter(authenticationManager);
-        authenticationWebFilter.setRequiresAuthenticationMatcher(ServerWebExchangeMatchers.pathMatchers("/login"));
+        AuthenticationWebFilter authenticationWebFilter = new AuthenticationWebFilter(reactiveAuthenticationManager);
+        authenticationWebFilter.setRequiresAuthenticationMatcher(ServerWebExchangeMatchers.pathMatchers(HttpMethod.POST, "/process-login"));
         authenticationWebFilter.setAuthenticationSuccessHandler(authenticationSuccessHandler());
+        authenticationWebFilter.setAuthenticationFailureHandler(authenticationFailureHandler());
 
         return http
                 .authorizeExchange(exchanges -> exchanges
-                        .pathMatchers(HttpMethod.GET, "/", "/index", "/home", "/webjars/**", "/css/**", "/js/**", "/images/**").permitAll()
-                        .pathMatchers("/auth/**", "/h2-console/**", "/login").permitAll()
+                        .pathMatchers(HttpMethod.GET, "/", "/index", "/home", "/webjars/**", "/css/**", "/js/**", "/images/**", "/login", "/auth/**").permitAll()
+                        .pathMatchers(HttpMethod.POST, "/process-login").permitAll()
                         .anyExchange().authenticated()
                 )
                 .addFilterAt(authenticationWebFilter, SecurityWebFiltersOrder.AUTHENTICATION)
                 .formLogin(form -> form
                         .loginPage("/login")
-                        .authenticationSuccessHandler(loginSuccessMessage())
-                        .authenticationFailureHandler((exchange, exception) -> Mono.empty())
+                        .authenticationSuccessHandler(authenticationSuccessHandler())
+                        .authenticationFailureHandler(authenticationFailureHandler())
                 )
                 .logout(logout -> logout
                         .logoutUrl("/logout")
@@ -70,8 +76,25 @@ public class SecurityConfig {
     }
 
     @Bean
-    public LoginSuccessMessage loginSuccessMessage() {
-        return new LoginSuccessMessage();
+    public ServerAuthenticationSuccessHandler authenticationSuccessHandler() {
+        return (webFilterExchange, authentication) -> {
+            ServerWebExchange exchange = webFilterExchange.getExchange();
+            return Mono.fromRunnable(() -> {
+                exchange.getResponse().setStatusCode(HttpStatus.FOUND);
+                exchange.getResponse().getHeaders().setLocation(URI.create("/home"));
+            });
+        };
+    }
+
+    @Bean
+    public ServerAuthenticationFailureHandler authenticationFailureHandler() {
+        return (webFilterExchange, exception) -> {
+            ServerWebExchange exchange = webFilterExchange.getExchange();
+            return Mono.fromRunnable(() -> {
+                exchange.getResponse().setStatusCode(HttpStatus.FOUND);
+                exchange.getResponse().getHeaders().setLocation(URI.create("/login?error=true"));
+            });
+        };
     }
 
     @Bean
@@ -81,10 +104,13 @@ public class SecurityConfig {
 
     @Bean
     public ReactiveUserDetailsService reactiveUserDetailsService() {
-        return username -> userRepository
-                .findByUsername(username)
-                .switchIfEmpty(Mono.error(new UsernameNotFoundException(USER_NOT_FOUND)))
-                .cast(UserDetails.class);
+        return username -> {
+            log.debug("Invoking findByUsername in SecurityConfig with username: {}", username);
+            return userRepository
+                    .findByUsername(username)
+                    .switchIfEmpty(Mono.error(new UsernameNotFoundException(USER_NOT_FOUND)))
+                    .cast(UserDetails.class);
+        };
     }
 
     @Bean
@@ -98,14 +124,10 @@ public class SecurityConfig {
     }
 
     @Bean
-    public ServerAuthenticationSuccessHandler authenticationSuccessHandler() {
-        return new WebFilterChainServerAuthenticationSuccessHandler();
-    }
-
-    @Bean
     public RedirectServerAuthenticationEntryPoint redirectServerAuthenticationEntryPoint(ServerRequestCache serverRequestCache) {
         RedirectServerAuthenticationEntryPoint entryPoint = new RedirectServerAuthenticationEntryPoint("/login");
         entryPoint.setRequestCache(serverRequestCache);
         return entryPoint;
     }
 }
+
