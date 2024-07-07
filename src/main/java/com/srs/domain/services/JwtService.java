@@ -35,12 +35,6 @@ public class JwtService {
         this.userRepository = userRepository;
     }
 
-    /**
-     * Generates a token for the given user.
-     *
-     * @param user the user details
-     * @return the generated token
-     */
     public Mono<String> getToken(UserDetails user) {
         return userRepository.existsByUsername(user.getUsername())
                 .flatMap(exists -> {
@@ -58,13 +52,6 @@ public class JwtService {
                 });
     }
 
-    /**
-     * Generates a token based on the given extra claims and user details.
-     *
-     * @param extraClaims the extra claims to include in the token
-     * @param user        the user details used to set the subject of the token
-     * @return the generated token
-     */
     private String generateToken(Map<String, Object> extraClaims, UserDetails user) {
         Key key = getKey();
         String jwt = Jwts.builder()
@@ -80,23 +67,11 @@ public class JwtService {
         return jwt;
     }
 
-    /**
-     * Generates the key for the function.
-     *
-     * @return The generated key.
-     */
     public SecretKey getKey() {
         byte[] keyBytes = Decoders.BASE64.decode(secretKey.trim());
         return Keys.hmacShaKeyFor(keyBytes);
     }
 
-    /**
-     * Checks if the token is valid.
-     *
-     * @param token       the token to be validated
-     * @param userDetails the UserDetails object containing user details
-     * @return "true" if the token is valid, false otherwise
-     */
     public Mono<Boolean> isTokenValid(String token, UserDetails userDetails) {
         return getUsernameFromToken(token)
                 .flatMap(username -> {
@@ -112,12 +87,6 @@ public class JwtService {
                 });
     }
 
-    /**
-     * Retrieves all the claims from the provided token.
-     *
-     * @param token the token from which to retrieve the claims
-     * @return the claims extracted from the token
-     */
     private Mono<Claims> getClaims(String token) {
         return Mono.fromCallable(() -> {
             if (token == null) {
@@ -131,45 +100,20 @@ public class JwtService {
         }).subscribeOn(Schedulers.boundedElastic());
     }
 
-    /**
-     * A function to get a claim from a token.
-     *
-     * @param token          the token from which to get the claim
-     * @param claimsResolver a function that resolves the claim from the token's claims
-     * @return the claim resolved by the claimsResolver function
-     */
     public <T> Mono<T> getClaim(String token, Function<Claims, T> claimsResolver) {
         return getClaims(token)
                 .flatMap(claims -> claims != null ? Mono.just(claimsResolver.apply(claims)) : Mono.empty());
     }
 
-    /**
-     * Retrieves the expiration date of a token.
-     *
-     * @param token the token for which to retrieve the expiration date
-     * @return the expiration date of the token
-     */
     private Mono<Date> getExpiration(String token) {
         return getClaim(token, Claims::getExpiration);
     }
 
-    /**
-     * Checks if the given token is expired.
-     *
-     * @param token the token to be checked
-     * @return "true" if the token is expired, false otherwise
-     */
     private Mono<Boolean> isTokenExpired(String token) {
         return getExpiration(token)
                 .map(expiration -> expiration.before(new Date()));
     }
 
-    /**
-     * Retrieves the username from the given token.
-     *
-     * @param token the token from which to retrieve the username
-     * @return the username retrieved from the token
-     */
     public Mono<String> getUsernameFromToken(String token) {
         return getClaim(token, Claims::getSubject)
                 .onErrorResume(e -> {

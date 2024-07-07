@@ -5,6 +5,7 @@ import com.srs.domain.models.dto.LoginRequest;
 import com.srs.domain.models.dto.RegisterRequest;
 import com.srs.domain.services.impl.UserServiceImpl;
 import lombok.RequiredArgsConstructor;
+import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.authentication.ReactiveAuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.userdetails.ReactiveUserDetailsService;
@@ -23,22 +24,22 @@ public class AuthService {
     private final UserServiceImpl userService;
 
     public Mono<AuthResponse> login(LoginRequest request) {
-        if (request.getUsername() == null || request.getPassword() == null) {
+        if (request == null || request.getUsername() == null || request.getPassword() == null) {
             return Mono.error(new IllegalArgumentException("Username or password cannot be null"));
         }
 
-        return reactiveAuthenticationManager.authenticate(
-                        new UsernamePasswordAuthenticationToken(
-                                request.getUsername(),
-                                request.getPassword()
-                        )
-                )
+        return reactiveAuthenticationManager.authenticate(new UsernamePasswordAuthenticationToken(
+                        request.getUsername(), request.getPassword()))
                 .flatMap(auth -> {
                     UserDetails user = (UserDetails) auth.getPrincipal();
+                    if (user == null) {
+                        return Mono.error(new IllegalStateException("UserDetails cannot be null"));
+                    }
                     return jwtService.getToken(user)
-                            .map(token -> AuthResponse.builder().token(token).build());
+                            .map(token -> AuthResponse.builder().token(token).build())
+                            .switchIfEmpty(Mono.error(new IllegalStateException("Token cannot be null")));
                 })
-                .onErrorResume(e -> Mono.just(AuthResponse.builder().token("Invalid username or password").build()));
+                .onErrorResume(e -> Mono.error(new BadCredentialsException("Invalid username or password", e)));
     }
 
     public Mono<AuthResponse> register(RegisterRequest request) {
