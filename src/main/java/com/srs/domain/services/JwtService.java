@@ -62,7 +62,7 @@ public class JwtService {
                 .signWith(key)
                 .compact();
 
-        log.debug("Generated JWT: {}", jwt);
+        log.debug("Generated JWT: {} for the user: {}", jwt, user.getUsername());
         return jwt;
     }
 

@@ -61,7 +61,7 @@ public class DataLoader {
                     Integer capacity = entry.getValue();
                     return capacityRepository.existsByAmenityType(amenityType)
                             .flatMap(exists -> {
-                                if (!exists) {
+                                if (Boolean.FALSE.equals(exists)) {
                                     return capacityRepository.save(new Capacity(amenityType, capacity));
                                 } else {
                                     log.info("The capacity for {} already exists", amenityType);
@@ -73,4 +73,3 @@ public class DataLoader {
                 .subscribe();
     }
 }
-
