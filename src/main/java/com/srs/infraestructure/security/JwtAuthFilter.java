@@ -3,6 +3,7 @@ package com.srs.infraestructure.security;
 import com.srs.domain.services.JwtService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpHeaders;
+import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.context.ReactiveSecurityContextHolder;
 import org.springframework.security.core.userdetails.ReactiveUserDetailsService;
@@ -15,7 +16,7 @@ import reactor.core.publisher.Mono;
 
 @Component
 @RequiredArgsConstructor
-public class JwtAuthenticationFilter implements WebFilter {
+public class JwtAuthFilter implements WebFilter {
 
     private final JwtService jwtService;
     private final ReactiveUserDetailsService reactiveUserDetailsService;
@@ -54,7 +55,7 @@ public class JwtAuthenticationFilter implements WebFilter {
                         return chain.filter(exchange);
                     }
                 })
-                .switchIfEmpty(chain.filter(exchange));
+                .switchIfEmpty(Mono.error(new BadCredentialsException("Invalid token")));
     }
 
 

@@ -1,10 +1,12 @@
 package com.srs.domain.models.dto;
 
 import lombok.Builder;
-import lombok.Getter;
+import lombok.Data;
 
+@Data
 @Builder
-@Getter
 public class AuthResponse {
-    String token;
+    private String token;
+    private String error;
 }
+

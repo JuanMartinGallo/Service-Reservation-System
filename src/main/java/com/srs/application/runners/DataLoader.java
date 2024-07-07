@@ -46,6 +46,7 @@ public class DataLoader {
                                 .username("juanmartin")
                                 .country("Argentina")
                                 .password("12345")
+                                .role("ROLE_ADMIN")
                                 .build();
 
                         return authService.register(defaultUser);

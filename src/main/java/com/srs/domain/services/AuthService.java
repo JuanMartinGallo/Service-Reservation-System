@@ -32,14 +32,18 @@ public class AuthService {
                         request.getUsername(), request.getPassword()))
                 .flatMap(auth -> {
                     UserDetails user = (UserDetails) auth.getPrincipal();
-                    if (user == null) {
-                        return Mono.error(new IllegalStateException("UserDetails cannot be null"));
-                    }
                     return jwtService.getToken(user)
-                            .map(token -> AuthResponse.builder().token(token).build())
-                            .switchIfEmpty(Mono.error(new IllegalStateException("Token cannot be null")));
+                            .map(token -> AuthResponse.builder().token(token).build());
                 })
-                .onErrorResume(e -> Mono.error(new BadCredentialsException("Invalid username or password", e)));
+                .onErrorResume(e -> {
+                    if (e instanceof BadCredentialsException) {
+                        return Mono.just(AuthResponse.builder().error("Invalid username or password").build());
+                    } else if (e instanceof JwtException) {
+                        return Mono.just(AuthResponse.builder().error("JWT error: " + e.getMessage()).build());
+                    } else {
+                        return Mono.just(AuthResponse.builder().error("Authentication error: " + e.getMessage()).build());
+                    }
+                });
     }
 
     public Mono<AuthResponse> register(RegisterRequest request) {

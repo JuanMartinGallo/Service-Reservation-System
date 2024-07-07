@@ -80,7 +80,7 @@ public class LoginController {
                         log.debug("Token generated for user {}: {}", request.getUsername(), response.getToken());
                         return exchange.getSession()
                                 .flatMap(session -> {
-                                    String token = response.getToken().replaceAll("\\s", ""); // Eliminar espacios en blanco
+                                    String token = response.getToken().replaceAll("\\s", "");
                                     log.debug("Token before saving to session: '{}'", token);
                                     session.getAttributes().put("token", token);
                                     return saveSecurityContextToSession(token, session);

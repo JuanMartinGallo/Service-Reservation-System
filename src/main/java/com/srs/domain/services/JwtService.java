@@ -60,8 +60,7 @@ public class JwtService {
                 .issuedAt(new Date(System.currentTimeMillis()))
                 .expiration(new Date(System.currentTimeMillis() + 1000 * 60 * 24))
                 .signWith(key)
-                .compact()
-                .replaceAll("\\s", "");
+                .compact();
 
         log.debug("Generated JWT: {}", jwt);
         return jwt;
@@ -87,10 +86,10 @@ public class JwtService {
                 });
     }
 
-    private Mono<Claims> getClaims(String token) {
+    public Mono<Claims> getClaims(String token) {
         return Mono.fromCallable(() -> {
             if (token == null) {
-                return null;
+                throw new JwtException("Token is null");
             }
             return Jwts.parser()
                     .verifyWith(getKey())
