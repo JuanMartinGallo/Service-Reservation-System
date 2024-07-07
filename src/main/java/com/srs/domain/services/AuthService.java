@@ -6,6 +6,7 @@ import com.srs.domain.models.dto.RegisterRequest;
 import com.srs.domain.services.impl.UserServiceImpl;
 import com.srs.infraestructure.security.JwtAuthManager;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.userdetails.ReactiveUserDetailsService;
@@ -14,6 +15,7 @@ import org.springframework.security.oauth2.jwt.JwtException;
 import org.springframework.stereotype.Service;
 import reactor.core.publisher.Mono;
 
+@Slf4j
 @Service
 @RequiredArgsConstructor
 public class AuthService {
@@ -24,7 +26,9 @@ public class AuthService {
     private final UserServiceImpl userService;
 
     public Mono<AuthResponse> login(LoginRequest request) {
-        if (request == null || request.getUsername() == null || request.getPassword() == null) {
+        log.debug("Starting login process for user: {}", request.getUsername());
+        if (request.getUsername() == null || request.getPassword() == null) {
+            log.error("Username or password cannot be null");
             return Mono.error(new IllegalArgumentException("Username or password cannot be null"));
         }
 
@@ -32,10 +36,15 @@ public class AuthService {
                         request.getUsername(), request.getPassword()))
                 .flatMap(auth -> {
                     UserDetails user = (UserDetails) auth.getPrincipal();
+                    log.debug("Authenticated user: {}", user.getUsername());
                     return jwtService.getToken(user)
-                            .map(token -> AuthResponse.builder().token(token).build());
+                            .map(token -> {
+                                log.debug("Generated token for user: {}", token);
+                                return AuthResponse.builder().token(token).build();
+                            });
                 })
                 .onErrorResume(e -> {
+                    log.error("Error during authentication: {}", e.getMessage());
                     if (e instanceof BadCredentialsException) {
                         return Mono.just(AuthResponse.builder().error("Invalid username or password").build());
                     } else if (e instanceof JwtException) {
@@ -47,7 +56,9 @@ public class AuthService {
     }
 
     public Mono<AuthResponse> register(RegisterRequest request) {
+        log.debug("Starting registration process for user: {}", request.getUsername());
         if (request.getUsername() == null || request.getPassword() == null || request.getFullname() == null || request.getCountry() == null) {
+            log.error("All fields are required");
             return Mono.error(new IllegalArgumentException("All fields are required"));
         }
 
@@ -57,14 +68,19 @@ public class AuthService {
     }
 
     public Mono<AuthResponse> refreshToken(String token) {
+        log.debug("Starting token refresh process for token: {}", token);
         return jwtService.getUsernameFromToken(token)
                 .flatMap(username -> reactiveUserDetailsService.findByUsername(username)
                         .flatMap(userDetails -> jwtService.isTokenValid(token, userDetails)
                                 .flatMap(isValid -> {
                                     if (Boolean.TRUE.equals(isValid)) {
                                         return jwtService.getToken(userDetails)
-                                                .map(newToken -> AuthResponse.builder().token(newToken).build());
+                                                .map(newToken -> {
+                                                    log.debug("Generated new token for user: {}", newToken);
+                                                    return AuthResponse.builder().token(newToken).build();
+                                                });
                                     } else {
+                                        log.error("Invalid token");
                                         return Mono.error(new JwtException("Invalid token"));
                                     }
                                 })
@@ -73,3 +89,4 @@ public class AuthService {
     }
 
 }
+

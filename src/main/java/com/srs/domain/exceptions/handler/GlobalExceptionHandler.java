@@ -8,6 +8,7 @@ import io.jsonwebtoken.UnsupportedJwtException;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.server.reactive.ServerHttpRequest;
+import org.springframework.security.oauth2.jwt.JwtException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.bind.annotation.ResponseStatus;
@@ -82,5 +83,14 @@ public class GlobalExceptionHandler {
         log.error("SignatureException: {}", signatureException.getMessage());
         String path = String.valueOf(request.getPath());
         return Mono.just(GlobalErrorMessage.builder().title(BAD_REQUEST).message(signatureException.getMessage()).path(path).build());
+    }
+
+    @ExceptionHandler(JwtException.class)
+    @ResponseStatus(HttpStatus.BAD_REQUEST)
+    @ResponseBody
+    public Mono<GlobalErrorMessage> handleJwtException(JwtException jwtException, ServerHttpRequest request) {
+        log.error("JwtException: {}", jwtException.getMessage());
+        String path = String.valueOf(request.getPath());
+        return Mono.just(GlobalErrorMessage.builder().title(BAD_REQUEST).message(jwtException.getMessage()).path(path).build());
     }
 }

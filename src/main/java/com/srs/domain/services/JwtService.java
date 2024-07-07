@@ -11,7 +11,6 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Service;
 import reactor.core.publisher.Mono;
-import reactor.core.scheduler.Schedulers;
 
 import javax.crypto.SecretKey;
 import java.security.Key;
@@ -27,6 +26,7 @@ import static com.srs.domain.utils.ApplicationConstants.USER_NOT_FOUND;
 public class JwtService {
 
     private final UserRepository userRepository;
+    private final long validityInMilliseconds = 3600000;
 
     @Value("${jwt.secret.key}")
     private String secretKey;
@@ -58,7 +58,7 @@ public class JwtService {
                 .subject(user.getUsername())
                 .claims(extraClaims)
                 .issuedAt(new Date(System.currentTimeMillis()))
-                .expiration(new Date(System.currentTimeMillis() + 1000 * 60 * 24))
+                .expiration(new Date(System.currentTimeMillis() + validityInMilliseconds))
                 .signWith(key)
                 .compact();
 
@@ -87,16 +87,19 @@ public class JwtService {
     }
 
     public Mono<Claims> getClaims(String token) {
-        return Mono.fromCallable(() -> {
-            if (token == null) {
-                throw new JwtException("Token is null");
-            }
-            return Jwts.parser()
+        try {
+            log.debug("Validating token: {}", token);
+            Claims claims = Jwts.parser()
                     .verifyWith(getKey())
                     .build()
                     .parseSignedClaims(token)
                     .getPayload();
-        }).subscribeOn(Schedulers.boundedElastic());
+            log.debug("Token valid, claims: {}", claims);
+            return Mono.just(claims);
+        } catch (JwtException | IllegalArgumentException e) {
+            log.error("Invalid token: {}", e.getMessage());
+            return Mono.error(new JwtException("Invalid token", e));
+        }
     }
 
     public <T> Mono<T> getClaim(String token, Function<Claims, T> claimsResolver) {

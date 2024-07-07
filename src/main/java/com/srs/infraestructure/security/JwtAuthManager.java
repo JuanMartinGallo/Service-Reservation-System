@@ -24,6 +24,7 @@ public class JwtAuthManager implements ReactiveAuthenticationManager {
 
     @Override
     public Mono<Authentication> authenticate(Authentication authentication) {
+        log.debug("Starting JWT authentication for token: {}", authentication.getCredentials().toString());
         return Mono.just(authentication)
                 .flatMap(auth -> jwtService.getClaims(auth.getCredentials().toString())
                         .map(claims -> {
@@ -35,9 +36,13 @@ public class JwtAuthManager implements ReactiveAuthenticationManager {
                                     .password("")
                                     .authorities(authorities)
                                     .build();
+                            log.debug("Successfully authenticated user: {} with role: {}", username, role);
                             return new UsernamePasswordAuthenticationToken(userDetails, null, authorities);
                         })
-                        .onErrorResume(e -> Mono.error(new JwtException("Invalid token", e)))
+                        .onErrorResume(e -> {
+                            log.error("Error in JWT authentication: {}", e.getMessage());
+                            return Mono.error(new JwtException("Invalid token", e));
+                        })
                 );
     }
 }
