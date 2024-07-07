@@ -23,7 +23,7 @@ public class UserServiceImpl implements UserService {
 
     private final UserRepository userRepository;
     private final PasswordEncoder passwordEncoder;
-    
+
     @Override
     public Flux<User> findAll() {
         return userRepository.findAll();
@@ -37,6 +37,7 @@ public class UserServiceImpl implements UserService {
 
     @Override
     public Mono<Long> createUser(final User user) {
+        user.setPassword(passwordEncoder.encode(user.getPassword()));
         return userRepository.save(user)
                 .map(User::getId);
     }
@@ -47,7 +48,7 @@ public class UserServiceImpl implements UserService {
                 .switchIfEmpty(Mono.error(new ResponseStatusException(HttpStatus.NOT_FOUND, USER_NOT_FOUND)))
                 .flatMap(existingUser -> {
                     existingUser.setUsername(user.getUsername());
-                    existingUser.setPassword(user.getPassword());
+                    existingUser.setPassword(passwordEncoder.encode(user.getPassword()));
                     existingUser.setFullname(user.getFullname());
                     existingUser.setCountry(user.getCountry());
                     existingUser.setRole(user.getRole());
@@ -70,8 +71,9 @@ public class UserServiceImpl implements UserService {
                 .switchIfEmpty(Mono.error(new ResponseStatusException(HttpStatus.NOT_FOUND, USER_NOT_FOUND)));
     }
 
+    @Override
     public Mono<User> saveUser(RegisterRequest request) {
-        User user = mapToEntity(request);
+        User user = mapToEntity(request, passwordEncoder);
         user.setPassword(passwordEncoder.encode(request.getPassword()));
         return userRepository.save(user);
     }

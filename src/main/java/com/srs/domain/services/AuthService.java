@@ -4,9 +4,9 @@ import com.srs.domain.models.dto.AuthResponse;
 import com.srs.domain.models.dto.LoginRequest;
 import com.srs.domain.models.dto.RegisterRequest;
 import com.srs.domain.services.impl.UserServiceImpl;
+import com.srs.infraestructure.security.JwtAuthManager;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.authentication.BadCredentialsException;
-import org.springframework.security.authentication.ReactiveAuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.userdetails.ReactiveUserDetailsService;
 import org.springframework.security.core.userdetails.UserDetails;
@@ -19,7 +19,7 @@ import reactor.core.publisher.Mono;
 public class AuthService {
 
     private final JwtService jwtService;
-    private final ReactiveAuthenticationManager reactiveAuthenticationManager;
+    private final JwtAuthManager jwtAuthManager;
     private final ReactiveUserDetailsService reactiveUserDetailsService;
     private final UserServiceImpl userService;
 
@@ -28,7 +28,7 @@ public class AuthService {
             return Mono.error(new IllegalArgumentException("Username or password cannot be null"));
         }
 
-        return reactiveAuthenticationManager.authenticate(new UsernamePasswordAuthenticationToken(
+        return jwtAuthManager.authenticate(new UsernamePasswordAuthenticationToken(
                         request.getUsername(), request.getPassword()))
                 .flatMap(auth -> {
                     UserDetails user = (UserDetails) auth.getPrincipal();

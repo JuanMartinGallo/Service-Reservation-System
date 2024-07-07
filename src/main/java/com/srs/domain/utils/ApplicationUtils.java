@@ -9,25 +9,12 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 @Slf4j
 public class ApplicationUtils {
 
-    private static final PasswordEncoder passwordEncoder = new PasswordEncoder() {
-        @Override
-        public String encode(CharSequence rawPassword) {
-            return "";
-        }
-
-        @Override
-        public boolean matches(CharSequence rawPassword, String encodedPassword) {
-            return false;
-        }
-    };
-
     private ApplicationUtils() {
         throw new IllegalStateException("Utility class");
     }
 
-    public static User mapToEntity(final RegisterRequest request) {
-        return User
-                .builder()
+    public static User mapToEntity(final RegisterRequest request, PasswordEncoder passwordEncoder) {
+        return User.builder()
                 .fullname(request.getFullname())
                 .username(request.getUsername())
                 .country(request.getCountry())
@@ -35,5 +22,4 @@ public class ApplicationUtils {
                 .role(String.valueOf(Role.ROLE_USER))
                 .build();
     }
-
 }

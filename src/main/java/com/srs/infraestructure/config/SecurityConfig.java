@@ -1,14 +1,13 @@
 package com.srs.infraestructure.config;
 
 import com.srs.domain.repositories.UserRepository;
+import com.srs.infraestructure.security.JwtAuthManager;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.HttpStatus;
-import org.springframework.security.authentication.ReactiveAuthenticationManager;
-import org.springframework.security.authentication.UserDetailsRepositoryReactiveAuthenticationManager;
 import org.springframework.security.config.annotation.method.configuration.EnableReactiveMethodSecurity;
 import org.springframework.security.config.annotation.web.reactive.EnableWebFluxSecurity;
 import org.springframework.security.config.web.server.SecurityWebFiltersOrder;
@@ -43,12 +42,12 @@ import static com.srs.domain.utils.ApplicationConstants.USER_NOT_FOUND;
 public class SecurityConfig {
 
     private final UserRepository userRepository;
+    private final JwtAuthManager jwtAuthManager;
 
     @Bean
     public SecurityWebFilterChain securityWebFilterChain(ServerHttpSecurity http,
-                                                         ReactiveAuthenticationManager reactiveAuthenticationManager,
                                                          ServerRequestCache requestCache) {
-        AuthenticationWebFilter authenticationWebFilter = new AuthenticationWebFilter(reactiveAuthenticationManager);
+        AuthenticationWebFilter authenticationWebFilter = new AuthenticationWebFilter(jwtAuthManager);
         authenticationWebFilter.setRequiresAuthenticationMatcher(ServerWebExchangeMatchers.pathMatchers(HttpMethod.POST, "/process-login"));
         authenticationWebFilter.setAuthenticationSuccessHandler(authenticationSuccessHandler());
         authenticationWebFilter.setAuthenticationFailureHandler(authenticationFailureHandler());
@@ -113,11 +112,6 @@ public class SecurityConfig {
                     .switchIfEmpty(Mono.error(new UsernameNotFoundException(USER_NOT_FOUND)))
                     .cast(UserDetails.class);
         };
-    }
-
-    @Bean
-    public ReactiveAuthenticationManager reactiveAuthenticationManager(ReactiveUserDetailsService userDetailsService) {
-        return new UserDetailsRepositoryReactiveAuthenticationManager(userDetailsService);
     }
 
     @Bean
