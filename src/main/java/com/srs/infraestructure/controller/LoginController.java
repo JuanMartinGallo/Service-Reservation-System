@@ -2,8 +2,18 @@ package com.srs.infraestructure.controller;
 
 import com.srs.domain.models.dto.LoginRequest;
 import com.srs.domain.services.AuthService;
+import com.srs.domain.services.JwtService;
+import io.jsonwebtoken.Claims;
+import io.jsonwebtoken.Jwts;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.GrantedAuthority;
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
+import org.springframework.security.core.context.SecurityContextImpl;
+import org.springframework.security.core.userdetails.UserDetails;
+import org.springframework.security.oauth2.jwt.JwtException;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -11,9 +21,14 @@ import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.server.ServerWebExchange;
+import org.springframework.web.server.WebSession;
 import reactor.core.publisher.Mono;
 
+import java.util.List;
+import java.util.stream.Collectors;
+
 import static com.srs.domain.utils.ApplicationConstants.LOGIN;
+
 
 @Slf4j
 @Controller
@@ -21,6 +36,7 @@ import static com.srs.domain.utils.ApplicationConstants.LOGIN;
 public class LoginController {
 
     private final AuthService authService;
+    private final JwtService jwtService;
 
     @GetMapping(value = "/login")
     public Mono<String> login(
@@ -57,20 +73,75 @@ public class LoginController {
 
     @PostMapping(value = "/process-login")
     public Mono<String> login(@ModelAttribute LoginRequest request, ServerWebExchange exchange) {
-        log.debug("POST /process-login called with request={}", request);
+        log.debug("Starting login process for user {}", request.getUsername());
         return authService.login(request)
                 .flatMap(response -> {
                     if (response.getToken() != null) {
-                        log.debug("Login successful, token received");
+                        log.debug("Token generated for user {}: {}", request.getUsername(), response.getToken());
                         return exchange.getSession()
-                                .doOnNext(session -> {
-                                    session.getAttributes().put("token", response.getToken());
-                                    log.debug("Token added to session attributes");
+                                .flatMap(session -> {
+                                    String token = response.getToken().replaceAll("\\s", ""); // Eliminar espacios en blanco
+                                    log.debug("Token before saving to session: '{}'", token);
+                                    session.getAttributes().put("token", token);
+                                    return saveSecurityContextToSession(token, session);
                                 })
                                 .then(Mono.just("redirect:/home"));
                     }
-                    log.debug("Login failed, no token received");
+                    log.debug("Error generating token for user {}", request.getUsername());
                     return Mono.just("redirect:/login?error=true");
                 });
+    }
+
+    private Mono<Void> saveSecurityContextToSession(String token, WebSession session) {
+        log.debug("Saving security context to session {}", token);
+        Authentication authentication = getAuthenticationFromToken(token);
+
+        SecurityContextImpl securityContext = new SecurityContextImpl(authentication);
+
+        session.getAttributes().put("SPRING_SECURITY_CONTEXT", securityContext);
+
+        return Mono.empty();
+    }
+
+    private Authentication getAuthenticationFromToken(String token) {
+        log.debug("Token received for authentication: '{}'", token);
+        Claims claims;
+
+        try {
+            claims = Jwts.parser()
+                    .verifyWith(jwtService.getKey())
+                    .build()
+                    .parseSignedClaims(token)
+                    .getPayload();
+        } catch (JwtException e) {
+            log.error("Error parsing JWT: ", e);
+            throw new IllegalArgumentException("Token JWT is not valid", e);
+        }
+
+        String username = claims.getSubject();
+
+        Object rolesObject = claims.get("role");
+
+        List<String> roles;
+        if (rolesObject instanceof List<?>) {
+            roles = ((List<?>) rolesObject).stream()
+                    .filter(String.class::isInstance)
+                    .map(String.class::cast)
+                    .toList();
+        } else {
+            throw new IllegalArgumentException("Roles must be a list of strings");
+        }
+
+        List<GrantedAuthority> authorities = roles.stream()
+                .map(SimpleGrantedAuthority::new)
+                .collect(Collectors.toList());
+
+        UserDetails userDetails = org.springframework.security.core.userdetails.User.builder()
+                .username(username)
+                .password("")
+                .authorities(authorities)
+                .build();
+
+        return new UsernamePasswordAuthenticationToken(userDetails, null, authorities);
     }
 }

@@ -32,7 +32,7 @@ public class ApplicationUtils {
                 .username(request.getUsername())
                 .country(request.getCountry())
                 .password(passwordEncoder.encode(request.getPassword()))
-                .role(String.valueOf(Role.USER))
+                .role(String.valueOf(Role.ROLE_USER))
                 .build();
     }
 

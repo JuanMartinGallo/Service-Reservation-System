@@ -45,7 +45,9 @@ public class JwtService {
         return userRepository.existsByUsername(user.getUsername())
                 .flatMap(exists -> {
                     if (Boolean.TRUE.equals(exists)) {
-                        return Mono.just(generateToken(new HashMap<>(), user));
+                        Map<String, Object> extraClaims = new HashMap<>();
+                        extraClaims.put("role", user.getAuthorities().iterator().next().getAuthority());
+                        return Mono.just(generateToken(extraClaims, user));
                     } else {
                         return Mono.error(new JwtException(USER_NOT_FOUND));
                     }
@@ -65,13 +67,17 @@ public class JwtService {
      */
     private String generateToken(Map<String, Object> extraClaims, UserDetails user) {
         Key key = getKey();
-        return Jwts.builder()
-                .claims(extraClaims)
+        String jwt = Jwts.builder()
                 .subject(user.getUsername())
+                .claims(extraClaims)
                 .issuedAt(new Date(System.currentTimeMillis()))
                 .expiration(new Date(System.currentTimeMillis() + 1000 * 60 * 24))
                 .signWith(key)
-                .compact();
+                .compact()
+                .replaceAll("\\s", "");
+
+        log.debug("Generated JWT: {}", jwt);
+        return jwt;
     }
 
     /**
@@ -79,23 +85,9 @@ public class JwtService {
      *
      * @return The generated key.
      */
-    private SecretKey getKey() {
-        byte[] keyBytes = Decoders.BASE64.decode(secretKey);
+    public SecretKey getKey() {
+        byte[] keyBytes = Decoders.BASE64.decode(secretKey.trim());
         return Keys.hmacShaKeyFor(keyBytes);
-    }
-
-    /**
-     * Retrieves the username from the given token.
-     *
-     * @param token the token from which to retrieve the username
-     * @return the username retrieved from the token
-     */
-    public Mono<String> getUsernameFromToken(String token) {
-        return getClaim(token, Claims::getSubject)
-                .onErrorResume(e -> {
-                    log.error("Error extracting username from token: {}", e.getMessage());
-                    return Mono.error(new JwtException("Error extracting username from token", e));
-                });
     }
 
     /**
@@ -126,7 +118,7 @@ public class JwtService {
      * @param token the token from which to retrieve the claims
      * @return the claims extracted from the token
      */
-    private Mono<Claims> getAllClaims(String token) {
+    private Mono<Claims> getClaims(String token) {
         return Mono.fromCallable(() -> {
             if (token == null) {
                 return null;
@@ -147,7 +139,7 @@ public class JwtService {
      * @return the claim resolved by the claimsResolver function
      */
     public <T> Mono<T> getClaim(String token, Function<Claims, T> claimsResolver) {
-        return getAllClaims(token)
+        return getClaims(token)
                 .flatMap(claims -> claims != null ? Mono.just(claimsResolver.apply(claims)) : Mono.empty());
     }
 
@@ -171,5 +163,27 @@ public class JwtService {
         return getExpiration(token)
                 .map(expiration -> expiration.before(new Date()));
     }
-}
 
+    /**
+     * Retrieves the username from the given token.
+     *
+     * @param token the token from which to retrieve the username
+     * @return the username retrieved from the token
+     */
+    public Mono<String> getUsernameFromToken(String token) {
+        return getClaim(token, Claims::getSubject)
+                .onErrorResume(e -> {
+                    log.error("Error extracting username from token: {}", e.getMessage());
+                    return Mono.error(new JwtException("Error extracting username from token", e));
+                });
+    }
+
+    public Mono<String> getRoleFromToken(String token) {
+        return getClaim(token, claims -> claims.get("role", String.class))
+                .onErrorResume(e -> {
+                    log.error("Error extracting role from token: {}", e.getMessage());
+                    return Mono.error(new JwtException("Error extracting role from token", e));
+                });
+    }
+
+}

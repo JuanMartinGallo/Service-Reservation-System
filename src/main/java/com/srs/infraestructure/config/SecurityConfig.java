@@ -24,6 +24,7 @@ import org.springframework.security.web.server.authentication.RedirectServerAuth
 import org.springframework.security.web.server.authentication.ServerAuthenticationFailureHandler;
 import org.springframework.security.web.server.authentication.ServerAuthenticationSuccessHandler;
 import org.springframework.security.web.server.authentication.logout.RedirectServerLogoutSuccessHandler;
+import org.springframework.security.web.server.context.WebSessionServerSecurityContextRepository;
 import org.springframework.security.web.server.savedrequest.NoOpServerRequestCache;
 import org.springframework.security.web.server.savedrequest.ServerRequestCache;
 import org.springframework.security.web.server.util.matcher.ServerWebExchangeMatchers;
@@ -68,6 +69,7 @@ public class SecurityConfig {
                         .logoutUrl("/logout")
                         .logoutSuccessHandler(new RedirectServerLogoutSuccessHandler())
                 )
+                .securityContextRepository(new WebSessionServerSecurityContextRepository())
                 .exceptionHandling(exceptions -> exceptions
                         .authenticationEntryPoint(redirectServerAuthenticationEntryPoint(requestCache))
                 )
