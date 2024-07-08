@@ -26,7 +26,6 @@ import static com.srs.domain.utils.ApplicationConstants.USER_NOT_FOUND;
 public class JwtService {
 
     private final UserRepository userRepository;
-    private final long validityInMilliseconds = 3600000;
 
     @Value("${jwt.secret.key}")
     private String secretKey;
@@ -54,6 +53,7 @@ public class JwtService {
 
     private String generateToken(Map<String, Object> extraClaims, UserDetails user) {
         Key key = getKey();
+        long validityInMilliseconds = 3600000;
         String jwt = Jwts.builder()
                 .subject(user.getUsername())
                 .claims(extraClaims)

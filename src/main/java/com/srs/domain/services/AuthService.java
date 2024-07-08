@@ -32,15 +32,19 @@ public class AuthService {
             return Mono.error(new IllegalArgumentException("Username or password cannot be null"));
         }
 
-        return jwtAuthManager.authenticate(new UsernamePasswordAuthenticationToken(
-                        request.getUsername(), request.getPassword()))
-                .flatMap(auth -> {
-                    UserDetails user = (UserDetails) auth.getPrincipal();
-                    log.debug("Authenticated user: {}", user.getUsername());
-                    return jwtService.getToken(user)
-                            .map(token -> {
-                                log.debug("Generated token for user: {}", token);
-                                return AuthResponse.builder().token(token).build();
+        return reactiveUserDetailsService.findByUsername(request.getUsername())
+                .flatMap(userDetails -> {
+                    UsernamePasswordAuthenticationToken authToken = new UsernamePasswordAuthenticationToken(
+                            request.getUsername(), request.getPassword(), userDetails.getAuthorities());
+                    return jwtAuthManager.authenticate(authToken)
+                            .flatMap(auth -> {
+                                UserDetails user = (UserDetails) auth.getPrincipal();
+                                log.debug("Authenticated user: {}", user.getUsername());
+                                return jwtService.getToken(user)
+                                        .map(token -> {
+                                            log.debug("Generated token for user: {}", token);
+                                            return AuthResponse.builder().token(token).build();
+                                        });
                             });
                 })
                 .onErrorResume(e -> {
@@ -64,23 +68,21 @@ public class AuthService {
 
         return userService.saveUser(request)
                 .flatMap(savedUser -> jwtService.getToken(savedUser)
-                        .map(token -> AuthResponse.builder().token(token).build()));
+                        .map(token -> {
+                            log.debug("Generated token for new user: {}", token);
+                            return AuthResponse.builder().token(token).build();
+                        }));
     }
 
     public Mono<AuthResponse> refreshToken(String token) {
-        log.debug("Starting token refresh process for token: {}", token);
         return jwtService.getUsernameFromToken(token)
                 .flatMap(username -> reactiveUserDetailsService.findByUsername(username)
                         .flatMap(userDetails -> jwtService.isTokenValid(token, userDetails)
                                 .flatMap(isValid -> {
                                     if (Boolean.TRUE.equals(isValid)) {
                                         return jwtService.getToken(userDetails)
-                                                .map(newToken -> {
-                                                    log.debug("Generated new token for user: {}", newToken);
-                                                    return AuthResponse.builder().token(newToken).build();
-                                                });
+                                                .map(newToken -> AuthResponse.builder().token(newToken).build());
                                     } else {
-                                        log.error("Invalid token");
                                         return Mono.error(new JwtException("Invalid token"));
                                     }
                                 })
