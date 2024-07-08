@@ -8,6 +8,7 @@ import io.jsonwebtoken.io.Decoders;
 import io.jsonwebtoken.security.Keys;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Service;
 import reactor.core.publisher.Mono;
@@ -39,7 +40,9 @@ public class JwtService {
                 .flatMap(exists -> {
                     if (Boolean.TRUE.equals(exists)) {
                         Map<String, Object> extraClaims = new HashMap<>();
-                        extraClaims.put("role", user.getAuthorities().iterator().next().getAuthority());
+                        extraClaims.put("role", user.getAuthorities().stream()
+                                .map(GrantedAuthority::getAuthority)
+                                .toList());
                         return Mono.just(generateToken(extraClaims, user));
                     } else {
                         return Mono.error(new JwtException(USER_NOT_FOUND));
@@ -123,13 +126,5 @@ public class JwtService {
                     return Mono.error(new JwtException("Error extracting username from token", e));
                 });
     }
-
-    public Mono<String> getRoleFromToken(String token) {
-        return getClaim(token, claims -> claims.get("role", String.class))
-                .onErrorResume(e -> {
-                    log.error("Error extracting role from token: {}", e.getMessage());
-                    return Mono.error(new JwtException("Error extracting role from token", e));
-                });
-    }
-
 }
+

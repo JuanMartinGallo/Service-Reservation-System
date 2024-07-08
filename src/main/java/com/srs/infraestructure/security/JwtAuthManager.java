@@ -3,20 +3,17 @@ package com.srs.infraestructure.security;
 import com.srs.domain.services.JwtService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.authentication.ReactiveAuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
-import org.springframework.security.core.GrantedAuthority;
-import org.springframework.security.core.authority.SimpleGrantedAuthority;
-import org.springframework.security.core.userdetails.UserDetails;
-import org.springframework.security.oauth2.jwt.JwtException;
-import org.springframework.stereotype.Component;
+import org.springframework.stereotype.Service;
 import reactor.core.publisher.Mono;
 
-import java.util.List;
+import java.util.ArrayList;
 
-@Component
 @Slf4j
+@Service
 @RequiredArgsConstructor
 public class JwtAuthManager implements ReactiveAuthenticationManager {
 
@@ -24,25 +21,16 @@ public class JwtAuthManager implements ReactiveAuthenticationManager {
 
     @Override
     public Mono<Authentication> authenticate(Authentication authentication) {
-        log.debug("Starting JWT authentication for token: {}", authentication.getCredentials().toString());
-        return Mono.just(authentication)
-                .flatMap(auth -> jwtService.getClaims(auth.getCredentials().toString())
-                        .map(claims -> {
-                            String username = claims.getSubject();
-                            String role = claims.get("role", String.class);
-                            List<GrantedAuthority> authorities = List.of(new SimpleGrantedAuthority(role));
-                            UserDetails userDetails = org.springframework.security.core.userdetails.User.builder()
-                                    .username(username)
-                                    .password("")
-                                    .authorities(authorities)
-                                    .build();
-                            log.debug("Successfully authenticated user: {} with role: {}", username, role);
-                            return new UsernamePasswordAuthenticationToken(userDetails, null, authorities);
-                        })
-                        .onErrorResume(e -> {
-                            log.error("Error in JWT authentication in authenticate: {}", e.getMessage());
-                            return Mono.error(new JwtException("Invalid token", e));
-                        })
-                );
+        String token = authentication.getCredentials().toString();
+        log.debug("Starting authentication for token: {}", token);
+
+        return jwtService.getUsernameFromToken(token)
+                .map(username -> new UsernamePasswordAuthenticationToken(username, token, new ArrayList<>()))
+                .cast(Authentication.class)
+                .onErrorResume(e -> {
+                    log.error("Error during token authentication: {}", e.getMessage());
+                    return Mono.error(new BadCredentialsException("Invalid token"));
+                });
     }
 }
+

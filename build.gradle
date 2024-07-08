@@ -71,6 +71,7 @@ dependencies {
     implementation libs.springSecurityWeb
     testImplementation libs.springSecurityTest
     implementation libs.springSecurityOauth2ResourceServer
+    implementation libs.dockerJava
 
     // JWT
     implementation libs.jsonWebToken

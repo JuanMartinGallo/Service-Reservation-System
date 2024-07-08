@@ -1,6 +1,5 @@
 package com.srs.infraestructure.config;
 
-import com.srs.domain.repositories.UserRepository;
 import com.srs.infraestructure.security.JwtAuthManager;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -12,9 +11,6 @@ import org.springframework.security.config.annotation.method.configuration.Enabl
 import org.springframework.security.config.annotation.web.reactive.EnableWebFluxSecurity;
 import org.springframework.security.config.web.server.SecurityWebFiltersOrder;
 import org.springframework.security.config.web.server.ServerHttpSecurity;
-import org.springframework.security.core.userdetails.ReactiveUserDetailsService;
-import org.springframework.security.core.userdetails.UserDetails;
-import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.server.SecurityWebFilterChain;
@@ -32,8 +28,6 @@ import reactor.core.publisher.Mono;
 
 import java.net.URI;
 
-import static com.srs.domain.utils.ApplicationConstants.USER_NOT_FOUND;
-
 @Configuration
 @EnableWebFluxSecurity
 @EnableReactiveMethodSecurity
@@ -41,12 +35,10 @@ import static com.srs.domain.utils.ApplicationConstants.USER_NOT_FOUND;
 @Slf4j
 public class SecurityConfig {
 
-    private final UserRepository userRepository;
     private final JwtAuthManager jwtAuthManager;
 
     @Bean
-    public SecurityWebFilterChain securityWebFilterChain(ServerHttpSecurity http,
-                                                         ServerRequestCache requestCache) {
+    public SecurityWebFilterChain securityWebFilterChain(ServerHttpSecurity http, ServerRequestCache requestCache) {
         AuthenticationWebFilter authenticationWebFilter = new AuthenticationWebFilter(jwtAuthManager);
         authenticationWebFilter.setRequiresAuthenticationMatcher(ServerWebExchangeMatchers.pathMatchers(HttpMethod.POST, "/process-login"));
         authenticationWebFilter.setAuthenticationSuccessHandler(authenticationSuccessHandler());
@@ -104,17 +96,6 @@ public class SecurityConfig {
     }
 
     @Bean
-    public ReactiveUserDetailsService reactiveUserDetailsService() {
-        return username -> {
-            log.debug("Invoking findByUsername in SecurityConfig with username: {}", username);
-            return userRepository
-                    .findByUsername(username)
-                    .switchIfEmpty(Mono.error(new UsernameNotFoundException(USER_NOT_FOUND)))
-                    .cast(UserDetails.class);
-        };
-    }
-
-    @Bean
     public ServerRequestCache requestCache() {
         return NoOpServerRequestCache.getInstance();
     }
@@ -126,3 +107,4 @@ public class SecurityConfig {
         return entryPoint;
     }
 }
+

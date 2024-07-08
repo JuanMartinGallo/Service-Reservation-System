@@ -1,11 +1,13 @@
 package com.srs.infraestructure.controller;
 
+import com.github.dockerjava.api.exception.UnauthorizedException;
 import com.srs.domain.models.Reservation;
 import com.srs.domain.models.User;
 import com.srs.domain.services.ReservationService;
 import com.srs.domain.services.impl.UserServiceImpl;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.security.core.Authentication;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
@@ -13,7 +15,6 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.SessionAttribute;
-import org.springframework.web.server.ServerWebExchange;
 import org.springframework.web.server.WebSession;
 import reactor.core.publisher.Mono;
 
@@ -26,34 +27,49 @@ public class HomeController {
     private final ReservationService reservationService;
 
     @GetMapping({"/", "/index", "/home"})
-    public Mono<String> home() {
+    public Mono<String> home(Authentication authentication, Model model, WebSession session) {
         log.debug("GET /home called");
+        if (authentication != null && authentication.isAuthenticated()) {
+            Object principal = authentication.getPrincipal();
+            if (principal instanceof UserDetails userDetails) {
+                return userService.getUserByUsername(userDetails.getUsername())
+                        .flatMap(user -> {
+                            log.debug("User fetched, adding to session attributes");
+                            session.getAttributes().put("user", user);
+                            Reservation reservation = new Reservation();
+                            model.addAttribute("reservation", reservation);
+                            return Mono.just("index");
+                        });
+            }
+        }
         return Mono.just("index");
     }
 
     @GetMapping("/reservations")
-    public Mono<String> reservations(ServerWebExchange exchange, Model model, WebSession session) {
+    public Mono<String> reservations(Authentication authentication, Model model, WebSession session) {
         log.debug("GET /reservations called");
-        return exchange.getPrincipal()
-                .cast(UserDetails.class)
-                .flatMap(principal -> {
-                    log.debug("Fetching user with username {}", principal.getUsername());
-                    return userService.getUserByUsername(principal.getUsername());
-                })
-                .flatMap(user -> {
-                    log.debug("User fetched, adding to session attributes");
-                    session.getAttributes().put("user", user);
-                    Reservation reservation = new Reservation();
-                    model.addAttribute("reservation", reservation);
-                    return Mono.just("reservations");
-                });
+        if (authentication != null && authentication.isAuthenticated()) {
+            Object principal = authentication.getPrincipal();
+            if (principal instanceof UserDetails userDetails) {
+                return userService.getUserByUsername(userDetails.getUsername())
+                        .flatMap(user -> {
+                            log.debug("User fetched, adding to session attributes");
+                            session.getAttributes().put("user", user);
+                            Reservation reservation = new Reservation();
+                            model.addAttribute("reservation", reservation);
+                            model.addAttribute("authenticated", true);
+                            return Mono.just("reservations");
+                        });
+            }
+        }
+        return Mono.error(new UnauthorizedException("User not authenticated"));
     }
+
 
     @PostMapping("/reservations-submit")
     public Mono<String> reservationsSubmit(
             @ModelAttribute Reservation reservation,
-            @SessionAttribute Mono<User> user,
-            Model model
+            @SessionAttribute Mono<User> user
     ) {
         log.debug("POST /reservations-submit called with reservation={}", reservation);
         return user.flatMap(reservationUser -> {
@@ -83,4 +99,3 @@ public class HomeController {
                 .thenReturn("redirect:/reservations");
     }
 }
-
