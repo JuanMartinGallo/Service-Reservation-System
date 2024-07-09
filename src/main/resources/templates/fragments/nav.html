@@ -6,11 +6,12 @@
     <div class="navbar-nav w-100">
         <a class="navbar-brand text-color" href="/">Amenities Reservation System</a>
     </div>
-    <a class="navbar-brand text-color" th:href="@{/login}" th:if="${#authorization.expression('isAnonymous()')}">Log
-        in</a>
-    <a class="navbar-brand text-color" th:href="@{/logout}" th:if="${#authorization.expression('isAuthenticated()')}">Log
-        out</a>
+    <div>
+        <a class="navbar-brand text-color" th:href="@{/logout}"
+           th:if="${#authorization.expression('isAuthenticated()')}">Log out</a>
+        <a class="navbar-brand text-color" th:href="@{/login}"
+           th:unless="${#authorization.expression('isAuthenticated()')}">Log in</a>
+    </div>
 </nav>
 </body>
-
 </html>

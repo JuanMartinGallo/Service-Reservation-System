@@ -4,8 +4,11 @@ import com.srs.domain.repositories.UserRepository;
 import com.srs.domain.services.JwtService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.validation.BindingResult;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -18,6 +21,7 @@ import reactor.core.publisher.Mono;
 @RestController
 @RequestMapping("/auth")
 @Validated
+@Slf4j
 public class AuthRestController {
 
     private final JwtService jwtService;
@@ -43,5 +47,17 @@ public class AuthRestController {
             return Mono.just(ResponseEntity.badRequest().body("Invalid id: " + id));
         }
     }
-}
 
+    @GetMapping("/check-authentication")
+    public String checkAuthentication() {
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        log.debug("Authentication: {}", authentication);
+        if (authentication == null || !authentication.isAuthenticated()) {
+            log.info("No authentication found");
+            return "Not Authenticated";
+        }
+        boolean isAuthenticated = authentication.isAuthenticated();
+        log.debug("Is authenticated: {}", isAuthenticated);
+        return "Authenticated as " + authentication.getName();
+    }
+}

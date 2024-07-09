@@ -22,8 +22,7 @@
                 <th scope="col">Date</th>
                 <th scope="col">Start Time</th>
                 <th scope="col">End Time</th>
-                <!-- Use conditional rendering for the delete button -->
-                <th scope="col" th:if="${#authorization.expression('hasRole(''ROLE_ADMIN'')')}">Actions</th>
+                <th scope="col" th:if="${#authorization.expression('isAuthenticated()')}">Actions</th>
             </tr>
             </thead>
             <tbody>
@@ -32,18 +31,18 @@
                 <td th:text="${reservation.getReservationDate()}"></td>
                 <td th:text="${reservation.getStartTime()}"></td>
                 <td th:text="${reservation.getEndTime()}"></td>
-                <!-- Conditional rendering for delete button -->
-                <td th:if="${#authorization.expression('hasRole(''ROLE_ADMIN'')')}">
-                    <form method="post" th:action="@{/delete-reservation}" th:object="${reservation}">
-                        <button class="btn btn-primary" type="submit">Delete</button>
-                    </form>
+                <td th:if="${#authorization.expression('isAuthenticated()')}">
+                    <button class="btn btn-primary" method="POST" th:href="@{/delete-reservation}"
+                            th:object="${reservation}">Delete
+                    </button>
                 </td>
             </tr>
             </tbody>
         </table>
 
         <!-- Button trigger modal -->
-        <button class="btn btn-success" data-bs-target="#createReservationModal" data-bs-toggle="modal" type="button">
+        <button class="btn btn-success" data-bs-target="#createReservationModal" data-bs-toggle="modal"
+                th:if="${#authorization.expression('isAuthenticated()')}" type="button">
             Create Reservation
         </button>
 
