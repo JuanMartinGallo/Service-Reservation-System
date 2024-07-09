@@ -1,4 +1,4 @@
-package com.srs.infraestructure.security;
+package com.srs.infrastructure.security;
 
 import com.srs.domain.services.JwtService;
 import lombok.RequiredArgsConstructor;

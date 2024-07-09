@@ -1,6 +1,6 @@
-package com.srs.infraestructure.config;
+package com.srs.infrastructure.config;
 
-import com.srs.infraestructure.security.JwtAuthManager;
+import com.srs.infrastructure.security.JwtAuthManager;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;

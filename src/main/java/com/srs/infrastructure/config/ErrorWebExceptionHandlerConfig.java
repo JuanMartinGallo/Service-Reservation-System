@@ -1,4 +1,4 @@
-package com.srs.infraestructure.config;
+package com.srs.infrastructure.config;
 
 import org.springframework.boot.web.reactive.error.ErrorWebExceptionHandler;
 import org.springframework.context.annotation.Bean;

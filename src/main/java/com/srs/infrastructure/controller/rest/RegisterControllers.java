@@ -1,4 +1,4 @@
-package com.srs.infraestructure.controller.rest;
+package com.srs.infrastructure.controller.rest;
 
 import com.srs.domain.models.dto.AuthResponse;
 import com.srs.domain.models.dto.RegisterRequest;

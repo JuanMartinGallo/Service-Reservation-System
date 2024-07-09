@@ -48,6 +48,7 @@ logging:
     com.srs: DEBUG
     org.springframework.security: INFO
     org.springframework: INFO
+    com.srs.infrastructure.security: DEBUG
 
 # Server Configuration
 server:

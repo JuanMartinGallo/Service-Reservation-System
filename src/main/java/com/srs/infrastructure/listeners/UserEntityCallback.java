@@ -1,4 +1,4 @@
-package com.srs.infraestructure.listeners;
+package com.srs.infrastructure.listeners;
 
 import com.srs.domain.models.User;
 import jakarta.validation.constraints.NotNull;

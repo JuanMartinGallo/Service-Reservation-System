@@ -1,4 +1,4 @@
-package com.srs.infraestructure.config;
+package com.srs.infrastructure.config;
 
 import com.srs.domain.repositories.UserRepository;
 import lombok.extern.slf4j.Slf4j;

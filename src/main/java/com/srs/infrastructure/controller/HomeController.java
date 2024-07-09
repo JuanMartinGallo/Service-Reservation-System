@@ -1,4 +1,4 @@
-package com.srs.infraestructure.controller;
+package com.srs.infrastructure.controller;
 
 import com.github.dockerjava.api.exception.UnauthorizedException;
 import com.srs.domain.models.Reservation;

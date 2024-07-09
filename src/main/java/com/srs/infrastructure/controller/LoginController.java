@@ -1,4 +1,4 @@
-package com.srs.infraestructure.controller;
+package com.srs.infrastructure.controller;
 
 import com.srs.domain.models.dto.LoginRequest;
 import com.srs.domain.services.AuthService;
