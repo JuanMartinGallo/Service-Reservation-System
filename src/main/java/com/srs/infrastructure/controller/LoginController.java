@@ -83,9 +83,9 @@ public class LoginController {
                                     String token = response.getToken().replaceAll("\\s", "");
                                     log.debug("Token before saving to session: '{}'", token);
                                     session.getAttributes().put("token", token);
-                                    return saveSecurityContextToSession(token, session);
-                                })
-                                .then(Mono.just("redirect:/home"));
+                                    return saveSecurityContextToSession(token, session)
+                                            .then(Mono.just("redirect:/home"));
+                                });
                     }
                     log.debug("Error generating token for user {}", request.getUsername());
                     return Mono.just("redirect:/login?error=true");

@@ -1,6 +1,8 @@
 package com.srs.infrastructure.config;
 
+import com.srs.infrastructure.security.JwtAuthFilter;
 import com.srs.infrastructure.security.JwtAuthManager;
+import com.srs.infrastructure.security.ServerSecurityContextRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
@@ -15,15 +17,12 @@ import org.springframework.security.config.web.server.ServerHttpSecurity;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.server.SecurityWebFilterChain;
-import org.springframework.security.web.server.authentication.AuthenticationWebFilter;
 import org.springframework.security.web.server.authentication.RedirectServerAuthenticationEntryPoint;
 import org.springframework.security.web.server.authentication.ServerAuthenticationFailureHandler;
 import org.springframework.security.web.server.authentication.ServerAuthenticationSuccessHandler;
 import org.springframework.security.web.server.authentication.logout.RedirectServerLogoutSuccessHandler;
-import org.springframework.security.web.server.context.WebSessionServerSecurityContextRepository;
 import org.springframework.security.web.server.savedrequest.NoOpServerRequestCache;
 import org.springframework.security.web.server.savedrequest.ServerRequestCache;
-import org.springframework.security.web.server.util.matcher.ServerWebExchangeMatchers;
 import org.springframework.web.server.ServerWebExchange;
 import reactor.core.publisher.Mono;
 
@@ -45,12 +44,7 @@ public class SecurityConfig {
     private String logoutPath;
 
     @Bean
-    public SecurityWebFilterChain securityWebFilterChain(ServerHttpSecurity http, ServerRequestCache requestCache) {
-        AuthenticationWebFilter authenticationWebFilter = new AuthenticationWebFilter(jwtAuthManager);
-        authenticationWebFilter.setRequiresAuthenticationMatcher(ServerWebExchangeMatchers.pathMatchers(HttpMethod.POST, "/process-login"));
-        authenticationWebFilter.setAuthenticationSuccessHandler(authenticationSuccessHandler());
-        authenticationWebFilter.setAuthenticationFailureHandler(authenticationFailureHandler());
-
+    public SecurityWebFilterChain securityWebFilterChain(ServerHttpSecurity http, JwtAuthFilter jwtAuthFilter, ServerRequestCache requestCache) {
         RedirectServerLogoutSuccessHandler logoutSuccessHandler = new RedirectServerLogoutSuccessHandler();
         logoutSuccessHandler.setLogoutSuccessUrl(URI.create(loginPath));
 
@@ -60,7 +54,7 @@ public class SecurityConfig {
                         .pathMatchers(HttpMethod.POST, "/process-login").permitAll()
                         .anyExchange().authenticated()
                 )
-                .addFilterAt(authenticationWebFilter, SecurityWebFiltersOrder.AUTHENTICATION)
+                .addFilterAt(jwtAuthFilter, SecurityWebFiltersOrder.AUTHENTICATION)
                 .formLogin(form -> form
                         .loginPage(loginPath)
                         .authenticationSuccessHandler(authenticationSuccessHandler())
@@ -70,13 +64,14 @@ public class SecurityConfig {
                         .logoutUrl(logoutPath)
                         .logoutSuccessHandler(logoutSuccessHandler)
                 )
-                .securityContextRepository(new WebSessionServerSecurityContextRepository())
+                .securityContextRepository(new ServerSecurityContextRepository(jwtAuthManager))
                 .exceptionHandling(exceptions -> exceptions
                         .authenticationEntryPoint(redirectServerAuthenticationEntryPoint(requestCache))
                 )
                 .csrf(ServerHttpSecurity.CsrfSpec::disable)
                 .build();
     }
+
 
     @Bean
     public ServerAuthenticationSuccessHandler authenticationSuccessHandler() {
