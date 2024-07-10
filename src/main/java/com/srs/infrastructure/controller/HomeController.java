@@ -30,6 +30,7 @@ public class HomeController {
     public Mono<String> home(Authentication authentication, Model model, WebSession session) {
         log.debug("GET /home called");
         if (authentication != null && authentication.isAuthenticated()) {
+            log.debug("User is already authenticated");
             Object principal = authentication.getPrincipal();
             if (principal instanceof UserDetails userDetails) {
                 return userService.getUserByUsername(userDetails.getUsername())
@@ -41,7 +42,8 @@ public class HomeController {
                             return Mono.just("index");
                         });
             }
-        }
+        } else
+            log.debug("User is not authenticated");
         return Mono.just("index");
     }
 

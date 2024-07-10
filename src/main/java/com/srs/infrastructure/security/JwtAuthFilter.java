@@ -28,6 +28,7 @@ public class JwtAuthFilter implements WebFilter {
         if (token == null) {
             return chain.filter(exchange);
         }
+        log.debug("Token value in filter: {}", token);
 
         return jwtService.getUsernameFromToken(token)
                 .flatMap(username -> {

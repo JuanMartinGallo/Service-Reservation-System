@@ -12,8 +12,8 @@ import org.springframework.security.core.userdetails.UserDetails;
 import java.time.OffsetDateTime;
 import java.util.Collection;
 import java.util.HashSet;
-import java.util.List;
 import java.util.Set;
+import java.util.stream.Stream;
 
 @Getter
 @Setter
@@ -36,8 +36,8 @@ public class User implements UserDetails {
     private String country;
     @Column("password")
     private String password;
-    @Column("role")
-    private String role;
+    @Column("roles")
+    private String roles;
     @Column("date_created")
     private OffsetDateTime dateCreated;
 
@@ -47,7 +47,8 @@ public class User implements UserDetails {
     //UserDetails implementations
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {
-        return List.of(new SimpleGrantedAuthority((role)));
+        return Stream.of(roles.split(", ")).map(SimpleGrantedAuthority::new)
+                .toList();
     }
 
     @Override
@@ -55,11 +56,11 @@ public class User implements UserDetails {
         return this.password;
     }
 
-    public Role getRoleEnum() {
-        return Role.valueOf(this.role);
+    public Roles getRoleEnum() {
+        return Roles.valueOf(this.roles);
     }
 
-    public void setRoleEnum(Role role) {
-        this.role = role.toString();
+    public void setRoleEnum(Roles role) {
+        this.roles = role.toString();
     }
 }

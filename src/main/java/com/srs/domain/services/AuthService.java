@@ -35,7 +35,7 @@ public class AuthService {
         User newUser = new User();
         newUser.setUsername(request.getUsername());
         newUser.setPassword(passwordEncoder.encode(request.getPassword()));
-        newUser.setRole("ROLE_USER");
+        newUser.setRoles(request.getRole());
 
         return userRepository.save(newUser).then(Mono.empty());
     }

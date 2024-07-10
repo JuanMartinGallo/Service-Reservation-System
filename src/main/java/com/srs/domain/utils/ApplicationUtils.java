@@ -1,6 +1,6 @@
 package com.srs.domain.utils;
 
-import com.srs.domain.models.Role;
+import com.srs.domain.models.Roles;
 import com.srs.domain.models.User;
 import com.srs.domain.models.dto.RegisterRequest;
 import lombok.extern.slf4j.Slf4j;
@@ -19,7 +19,7 @@ public class ApplicationUtils {
                 .username(request.getUsername())
                 .country(request.getCountry())
                 .password(passwordEncoder.encode(request.getPassword()))
-                .role(String.valueOf(Role.ROLE_USER))
+                .roles(String.valueOf(Roles.ROLE_USER))
                 .build();
     }
 }

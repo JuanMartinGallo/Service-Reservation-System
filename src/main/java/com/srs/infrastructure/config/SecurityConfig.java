@@ -35,7 +35,7 @@ import java.net.URI;
 @Slf4j
 public class SecurityConfig {
 
-    private final JwtAuthManager jwtAuthManager;
+    private final JwtAuthManager jwtManager;
 
     @Value("${login.path}")
     private String loginPath;
@@ -64,7 +64,7 @@ public class SecurityConfig {
                         .logoutUrl(logoutPath)
                         .logoutSuccessHandler(logoutSuccessHandler)
                 )
-                .securityContextRepository(new ServerSecurityContextRepository(jwtAuthManager))
+                .securityContextRepository(new ServerSecurityContextRepository(jwtManager))
                 .exceptionHandling(exceptions -> exceptions
                         .authenticationEntryPoint(redirectServerAuthenticationEntryPoint(requestCache))
                 )

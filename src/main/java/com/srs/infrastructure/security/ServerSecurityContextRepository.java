@@ -2,7 +2,6 @@ package com.srs.infrastructure.security;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.http.HttpHeaders;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.context.SecurityContext;
 import org.springframework.security.core.context.SecurityContextImpl;
@@ -20,12 +19,16 @@ public class ServerSecurityContextRepository extends WebSessionServerSecurityCon
 
     @Override
     public Mono<SecurityContext> load(ServerWebExchange exchange) {
-        String token = exchange.getRequest().getHeaders().getFirst(HttpHeaders.AUTHORIZATION);
-        if (token != null && token.startsWith("Bearer ")) {
-            token = token.substring(7);
-            return jwtAuthManager.authenticate(new UsernamePasswordAuthenticationToken(token, token))
-                    .map(SecurityContextImpl::new);
-        }
-        return Mono.empty();
+        return exchange.getSession()
+                .flatMap(session -> {
+                    String token = session.getAttribute("token");
+                    if (token != null) {
+                        return jwtAuthManager.authenticate(new UsernamePasswordAuthenticationToken(token, token))
+                                .map(SecurityContextImpl::new);
+                    } else
+                        log.debug("No token in session");
+                    return Mono.empty();
+                });
     }
 }
+
