@@ -22,6 +22,16 @@ import static com.srs.domain.utils.ApplicationConstants.BAD_REQUEST;
 @Slf4j
 @RestControllerAdvice
 public class GlobalExceptionHandler {
+
+    @ExceptionHandler(RuntimeException.class)
+    @ResponseStatus(HttpStatus.BAD_REQUEST)
+    @ResponseBody
+    public Mono<GlobalErrorMessage> handleRuntimeException(RuntimeException runtimeException, ServerHttpRequest request) {
+        log.error("RuntimeException: {}", runtimeException.getMessage());
+        String path = String.valueOf(request.getPath());
+        return Mono.just(GlobalErrorMessage.builder().title(BAD_REQUEST).message(runtimeException.getMessage()).path(path).build());
+    }
+
     @ExceptionHandler(CapacityFullException.class)
     @ResponseStatus(HttpStatus.BAD_REQUEST)
     @ResponseBody

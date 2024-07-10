@@ -47,9 +47,9 @@ public class JwtService {
                 .flatMap(exists -> {
                     if (Boolean.TRUE.equals(exists)) {
                         Map<String, Object> extraClaims = new HashMap<>();
-                        extraClaims.put("role", userDetails.getAuthorities().stream()
+                        extraClaims.put("roles", userDetails.getAuthorities().stream()
                                 .map(GrantedAuthority::getAuthority)
-                                .toList());
+                                .collect(Collectors.toList()));
                         return Mono.just(generateToken(extraClaims, userDetails));
                     } else {
                         return Mono.error(new JwtException(USER_NOT_FOUND));
