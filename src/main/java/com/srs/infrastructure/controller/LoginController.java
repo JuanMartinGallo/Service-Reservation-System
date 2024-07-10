@@ -5,9 +5,6 @@ import com.srs.domain.services.AuthService;
 import com.srs.domain.services.JwtService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.security.core.Authentication;
-import org.springframework.security.core.context.ReactiveSecurityContextHolder;
-import org.springframework.security.core.context.SecurityContextImpl;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -44,6 +41,7 @@ public class LoginController {
                     }
                     return exchange.getPrincipal()
                             .flatMap(principalObj -> {
+                                log.debug("Principal: {}", principalObj);
                                 if (principalObj != null) {
                                     model.addAttribute("warning", "You are already logged in");
                                     log.debug("User is already logged in");
@@ -80,16 +78,14 @@ public class LoginController {
                 });
     }
 
-
-    private Mono<Void> saveSecurityContextToSession(String token, ServerWebExchange exchange) {
-        log.debug("Saving security context to session {}", token);
-        Authentication authentication = jwtService.getAuthenticationFromToken(token);
-
-        SecurityContextImpl securityContext = new SecurityContextImpl(authentication);
-
-        return exchange.getPrincipal()
-                .contextWrite(ReactiveSecurityContextHolder.withSecurityContext(Mono.just(securityContext)))
-                .then();
+    @GetMapping(value = "/logout")
+    public Mono<String> logout(ServerWebExchange exchange) {
+        log.debug("GET /logout called");
+        return exchange.getSession()
+                .flatMap(session -> {
+                    session.getAttributes().remove("token");
+                    return Mono.just("redirect:/login?logout=true");
+                });
     }
 
 }

@@ -6,6 +6,8 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpHeaders;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.context.ReactiveSecurityContextHolder;
+import org.springframework.security.core.context.SecurityContext;
+import org.springframework.security.core.context.SecurityContextImpl;
 import org.springframework.security.core.userdetails.ReactiveUserDetailsService;
 import org.springframework.stereotype.Component;
 import org.springframework.util.StringUtils;
@@ -40,8 +42,9 @@ public class JwtAuthFilter implements WebFilter {
                                             UsernamePasswordAuthenticationToken authToken = new UsernamePasswordAuthenticationToken(
                                                     userDetails, null, userDetails.getAuthorities());
 
+                                            SecurityContext context = new SecurityContextImpl(authToken);
                                             return chain.filter(exchange)
-                                                    .contextWrite(ReactiveSecurityContextHolder.withAuthentication(authToken));
+                                                    .contextWrite(ReactiveSecurityContextHolder.withSecurityContext(Mono.just(context)));
                                         }));
                     } else {
                         return chain.filter(exchange);

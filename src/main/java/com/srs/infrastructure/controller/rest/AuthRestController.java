@@ -7,6 +7,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.authentication.AnonymousAuthenticationToken;
 import org.springframework.security.core.context.ReactiveSecurityContextHolder;
 import org.springframework.security.core.context.SecurityContext;
 import org.springframework.validation.BindingResult;
@@ -55,19 +56,18 @@ public class AuthRestController {
         return ReactiveSecurityContextHolder.getContext()
                 .doOnNext(context -> log.debug("SecurityContext: {}", context))
                 .map(SecurityContext::getAuthentication)
-                .map(authentication -> {
+                .flatMap(authentication -> {
                     log.debug("Authentication: {}", authentication);
-                    if (authentication == null || !authentication.isAuthenticated()) {
+                    if (authentication == null || !authentication.isAuthenticated() || authentication instanceof AnonymousAuthenticationToken) {
                         log.debug("No authentication found");
-                        return "Not Authenticated";
+                        return Mono.just("Not Authenticated");
                     } else {
                         log.debug("Authentication found");
-                        return "Authenticated as " + authentication.getName();
+                        return Mono.just("Authenticated as " + authentication.getName());
                     }
                 })
                 .defaultIfEmpty("Not Authenticated because authentication is empty")
                 .doOnError(error -> log.error("Error in checkAuthentication: {}", error.getMessage()));
     }
-
 
 }

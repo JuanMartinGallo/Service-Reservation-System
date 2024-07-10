@@ -23,6 +23,7 @@ public class ServerSecurityContextRepository extends WebSessionServerSecurityCon
                 .flatMap(session -> {
                     String token = session.getAttribute("token");
                     if (token != null) {
+                        log.debug("Token in session: {}", token);
                         return jwtAuthManager.authenticate(new UsernamePasswordAuthenticationToken(token, token))
                                 .map(SecurityContextImpl::new);
                     } else
