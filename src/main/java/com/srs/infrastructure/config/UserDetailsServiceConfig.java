@@ -10,9 +10,9 @@ import org.springframework.security.core.userdetails.ReactiveUserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import reactor.core.publisher.Mono;
 
+import java.util.Arrays;
 import java.util.List;
 import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
 @Slf4j
 @Configuration
@@ -29,7 +29,7 @@ public class UserDetailsServiceConfig {
                     .findByUsername(username)
                     .switchIfEmpty(Mono.error(new UsernameNotFoundException("User not found")))
                     .map(user -> {
-                        List<SimpleGrantedAuthority> authorities = Stream.of(user.getRoles().split(", "))
+                        List<SimpleGrantedAuthority> authorities = Arrays.stream(user.getRoles().split(","))
                                 .map(SimpleGrantedAuthority::new)
                                 .collect(Collectors.toList());
                         return new org.springframework.security.core.userdetails.User(

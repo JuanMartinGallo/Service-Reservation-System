@@ -8,6 +8,7 @@ import org.springframework.security.authentication.UsernamePasswordAuthenticatio
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
+import org.springframework.security.core.userdetails.ReactiveUserDetailsService;
 import org.springframework.stereotype.Service;
 import reactor.core.publisher.Mono;
 
@@ -20,6 +21,7 @@ import java.util.stream.Collectors;
 public class JwtAuthManager implements ReactiveAuthenticationManager {
 
     private final JwtService jwtService;
+    private final ReactiveUserDetailsService reactiveUserDetailsService;
 
     @Override
     public Mono<Authentication> authenticate(Authentication authentication) {
@@ -29,11 +31,12 @@ public class JwtAuthManager implements ReactiveAuthenticationManager {
                     log.error("Invalid token", e);
                     return Mono.error(new Exception("Invalid token"));
                 })
-                .map(claims -> {
+                .flatMap(claims -> {
                     log.debug("Claims: {}", claims);
+                    String username = claims.getSubject();
                     Object rolesObj = claims.get("roles");
                     if (rolesObj == null) {
-                        log.error("Roles are null for user: {}", claims.getSubject());
+                        log.error("Roles are null for user: {}", username);
                         throw new RuntimeException("Roles are null");
                     }
 
@@ -49,11 +52,10 @@ public class JwtAuthManager implements ReactiveAuthenticationManager {
                             .map(SimpleGrantedAuthority::new)
                             .collect(Collectors.toList());
 
-                    return new UsernamePasswordAuthenticationToken(
-                            claims.getSubject(),
-                            null,
-                            authorities
-                    );
+                    return reactiveUserDetailsService.findByUsername(username)
+                            .map(userDetails -> new UsernamePasswordAuthenticationToken(
+                                    userDetails, null, authorities));
                 });
     }
+
 }

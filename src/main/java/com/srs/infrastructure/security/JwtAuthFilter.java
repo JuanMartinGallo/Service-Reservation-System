@@ -8,7 +8,6 @@ import org.springframework.security.authentication.UsernamePasswordAuthenticatio
 import org.springframework.security.core.context.ReactiveSecurityContextHolder;
 import org.springframework.security.core.context.SecurityContext;
 import org.springframework.security.core.context.SecurityContextImpl;
-import org.springframework.security.core.userdetails.ReactiveUserDetailsService;
 import org.springframework.stereotype.Component;
 import org.springframework.util.StringUtils;
 import org.springframework.web.server.ServerWebExchange;
@@ -22,7 +21,7 @@ import reactor.core.publisher.Mono;
 public class JwtAuthFilter implements WebFilter {
 
     private final JwtService jwtService;
-    private final ReactiveUserDetailsService reactiveUserDetailsService;
+    private final JwtAuthManager jwtAuthManager;
 
     @Override
     public Mono<Void> filter(ServerWebExchange exchange, WebFilterChain chain) {
@@ -35,18 +34,13 @@ public class JwtAuthFilter implements WebFilter {
         return jwtService.getUsernameFromToken(token)
                 .flatMap(username -> {
                     if (username != null) {
-                        return reactiveUserDetailsService.findByUsername(username)
-                                .flatMap(userDetails -> jwtService.isTokenValid(token, userDetails)
-                                        .filter(valid -> valid)
-                                        .flatMap(valid -> {
-                                            UsernamePasswordAuthenticationToken authToken = new UsernamePasswordAuthenticationToken(
-                                                    userDetails, null, userDetails.getAuthorities());
-
-                                            SecurityContext context = new SecurityContextImpl(authToken);
-                                            return chain.filter(exchange)
-                                                    .contextWrite(ReactiveSecurityContextHolder.withSecurityContext(Mono.just(context)))
-                                                    .doOnEach(signal -> log.debug("SecurityContext after filter: {}", context));
-                                        }));
+                        return jwtAuthManager.authenticate(new UsernamePasswordAuthenticationToken(username, token))
+                                .flatMap(authentication -> {
+                                    SecurityContext context = new SecurityContextImpl(authentication);
+                                    return chain.filter(exchange)
+                                            .contextWrite(ReactiveSecurityContextHolder.withSecurityContext(Mono.just(context)))
+                                            .doOnEach(signal -> log.debug("SecurityContext after filter: {}", context));
+                                });
                     } else {
                         return chain.filter(exchange);
                     }
