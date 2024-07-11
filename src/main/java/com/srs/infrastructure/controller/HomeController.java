@@ -15,6 +15,7 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.SessionAttribute;
+import org.springframework.web.server.ServerWebExchange;
 import org.springframework.web.server.WebSession;
 import reactor.core.publisher.Mono;
 
@@ -27,8 +28,10 @@ public class HomeController {
     private final ReservationService reservationService;
 
     @GetMapping({"/", "/index", "/home"})
-    public Mono<String> home(Authentication authentication, Model model, WebSession session) {
-        log.debug("GET /home called");
+    public Mono<String> home(Authentication authentication, Model model, WebSession session, ServerWebExchange exchange) {
+        String path = exchange.getRequest().getPath().toString();
+        log.debug("GET {} called", path);
+
         if (authentication != null && authentication.isAuthenticated()) {
             log.debug("User is already authenticated in home");
             Object principal = authentication.getPrincipal();
@@ -42,10 +45,12 @@ public class HomeController {
                             return Mono.just("index");
                         });
             }
-        } else
+        } else {
             log.debug("User is not authenticated");
+        }
         return Mono.just("index");
     }
+
 
     @GetMapping("/reservations")
     public Mono<String> reservations(Authentication authentication, Model model, WebSession session) {
@@ -53,7 +58,9 @@ public class HomeController {
         if (authentication != null && authentication.isAuthenticated()) {
             log.debug("User is already authenticated reservation controller");
             Object principal = authentication.getPrincipal();
+            log.debug("Principal: {}", principal);
             if (principal instanceof UserDetails userDetails) {
+                log.debug("User details: {}", userDetails);
                 return userService.getUserByUsername(userDetails.getUsername())
                         .flatMap(user -> {
                             log.debug("User fetched, adding to session attributes");
@@ -63,11 +70,12 @@ public class HomeController {
                             model.addAttribute("authenticated", true);
                             return Mono.just("reservations");
                         });
+            } else {
+                log.warn("Principal is not an instance of UserDetails");
             }
         }
         return Mono.error(new UnauthorizedException("User not authenticated"));
     }
-
 
     @PostMapping("/reservations-submit")
     public Mono<String> reservationsSubmit(

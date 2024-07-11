@@ -1,23 +1,25 @@
 package com.srs.infrastructure.config;
 
 import com.srs.domain.repositories.UserRepository;
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.ReactiveUserDetailsService;
-import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import reactor.core.publisher.Mono;
 
+import java.util.List;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
+
 @Slf4j
 @Configuration
+@RequiredArgsConstructor
 public class UserDetailsServiceConfig {
 
     private final UserRepository userRepository;
-
-    public UserDetailsServiceConfig(UserRepository userRepository) {
-        this.userRepository = userRepository;
-    }
 
     @Bean
     public ReactiveUserDetailsService reactiveUserDetailsService() {
@@ -26,8 +28,13 @@ public class UserDetailsServiceConfig {
             return userRepository
                     .findByUsername(username)
                     .switchIfEmpty(Mono.error(new UsernameNotFoundException("User not found")))
-                    .cast(UserDetails.class);
+                    .map(user -> {
+                        List<SimpleGrantedAuthority> authorities = Stream.of(user.getRoles().split(", "))
+                                .map(SimpleGrantedAuthority::new)
+                                .collect(Collectors.toList());
+                        return new org.springframework.security.core.userdetails.User(
+                                user.getUsername(), user.getPassword(), authorities);
+                    });
         };
     }
 }
-

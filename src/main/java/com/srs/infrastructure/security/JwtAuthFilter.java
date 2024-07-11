@@ -44,7 +44,8 @@ public class JwtAuthFilter implements WebFilter {
 
                                             SecurityContext context = new SecurityContextImpl(authToken);
                                             return chain.filter(exchange)
-                                                    .contextWrite(ReactiveSecurityContextHolder.withSecurityContext(Mono.just(context)));
+                                                    .contextWrite(ReactiveSecurityContextHolder.withSecurityContext(Mono.just(context)))
+                                                    .doOnEach(signal -> log.debug("SecurityContext after filter: {}", context));
                                         }));
                     } else {
                         return chain.filter(exchange);

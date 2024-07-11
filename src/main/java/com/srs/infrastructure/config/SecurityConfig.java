@@ -10,10 +10,13 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.HttpStatus;
+import org.springframework.security.authentication.ReactiveAuthenticationManager;
+import org.springframework.security.authentication.UserDetailsRepositoryReactiveAuthenticationManager;
 import org.springframework.security.config.annotation.method.configuration.EnableReactiveMethodSecurity;
 import org.springframework.security.config.annotation.web.reactive.EnableWebFluxSecurity;
 import org.springframework.security.config.web.server.SecurityWebFiltersOrder;
 import org.springframework.security.config.web.server.ServerHttpSecurity;
+import org.springframework.security.core.userdetails.ReactiveUserDetailsService;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.server.SecurityWebFilterChain;
@@ -36,6 +39,7 @@ import java.net.URI;
 public class SecurityConfig {
 
     private final JwtAuthManager jwtAuthManager;
+    private final ReactiveUserDetailsService reactiveUserDetailsService;
 
     @Value("${login.path}")
     private String loginPath;
@@ -64,12 +68,18 @@ public class SecurityConfig {
                         .logoutUrl(logoutPath)
                         .logoutSuccessHandler(logoutSuccessHandler)
                 )
+                .authenticationManager(authenticationManager())
                 .securityContextRepository(new ServerSecurityContextRepository(jwtAuthManager))
                 .exceptionHandling(exceptions -> exceptions
                         .authenticationEntryPoint(redirectServerAuthenticationEntryPoint(requestCache))
                 )
                 .csrf(ServerHttpSecurity.CsrfSpec::disable)
                 .build();
+    }
+
+    @Bean
+    public ReactiveAuthenticationManager authenticationManager() {
+        return new UserDetailsRepositoryReactiveAuthenticationManager(reactiveUserDetailsService);
     }
 
     @Bean

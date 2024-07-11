@@ -1,5 +1,6 @@
 <!DOCTYPE html>
-<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<html lang="en"
+      xmlns:th="http://www.thymeleaf.org">
 
 <body>
 <nav class="navbar navbar-expand navbar-dark" style="background-color: #55843b;" th:fragment="nav">
@@ -7,11 +8,10 @@
         <a class="navbar-brand text-color" href="/">Amenities Reservation System</a>
     </div>
     <div>
-        <a class="navbar-brand text-color" th:href="@{/logout}"
-           th:if="${#authorization.expression('isAuthenticated()')}">Log out</a>
-        <a class="navbar-brand text-color" th:href="@{/login}"
-           th:unless="${#authorization.expression('isAuthenticated()')}">Log in</a>
+        <a class="navbar-brand text-color" th:href="@{/logout}" th:if="${isLoggedIn}">Log out</a>
+        <a class="navbar-brand text-color" th:href="@{/login}" th:unless="${isLoggedIn}">Log in</a>
     </div>
+
 </nav>
 </body>
 </html>
