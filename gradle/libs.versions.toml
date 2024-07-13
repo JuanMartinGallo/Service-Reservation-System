@@ -26,6 +26,7 @@ webjarsJquery = "3.7.1"
 webjarsLocator = "0.52"
 webjarsPopper = "2.11.7"
 dockerJava = "3.3.6"
+mapstruct = "1.5.5.Final"
 
 [libraries]
 # Resilience
@@ -58,6 +59,7 @@ springSecurity = { module = "org.springframework.boot:spring-boot-starter-securi
 springSecurityConfig = { module = "org.springframework.security:spring-security-config", version.ref = "springSecurity" }
 springSecurityCore = { module = "org.springframework.security:spring-security-core", version.ref = "springSecurity" }
 springSecurityOauth2ResourceServer = { module = "org.springframework.boot:spring-boot-starter-oauth2-resource-server", version.ref = "springBoot" }
+
 # Security
 springSecurityTest = { module = "org.springframework.security:spring-security-test", version.ref = "springSecurityTest" }
 springSecurityWeb = { module = "org.springframework.security:spring-security-web", version.ref = "springSecurity" }
@@ -80,6 +82,8 @@ webjarsBootstrap = { module = "org.webjars:bootstrap", version.ref = "webjarsBoo
 webjarsJquery = { module = "org.webjars:jquery", version.ref = "webjarsJquery" }
 webjarsLocator = { module = "org.webjars:webjars-locator", version.ref = "webjarsLocator" }
 webjarsPopper = { module = "org.webjars:popper.js", version.ref = "webjarsPopper" }
+mapstruct = { module = "org.mapstruct:mapstruct", version.ref = "mapstruct" }
+mapstructProcessor = { module = "org.mapstruct:mapstruct-processor", version.ref = "mapstruct" }
 
 [plugins]
 benManesVersions = { id = "com.github.ben-manes.versions", version.ref = "benManesVersions" }

@@ -24,7 +24,7 @@ public class Reservation {
     @Column("Username")
     private String username;
 
-    @DateTimeFormat(pattern = "yyyy-MM-dd")
+    @DateTimeFormat(pattern = "MM/dd/yyyy")
     @Column("reservation_date")
     private LocalDate reservationDate;
 
@@ -37,9 +37,8 @@ public class Reservation {
     private LocalTime endTime;
 
     @Column("amenity_type")
-    private String amenityType;
+    private AmenityType amenityType;
 
     @Column("user_id")
     private Long userId;
 }
-

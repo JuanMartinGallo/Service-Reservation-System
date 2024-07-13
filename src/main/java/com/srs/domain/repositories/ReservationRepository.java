@@ -20,7 +20,6 @@ public interface ReservationRepository extends R2dbcRepository<Reservation, Long
     @Query("SELECT * FROM reservations WHERE amenity_type = :amenityType")
     Flux<Reservation> findReservationsByAmenityType(AmenityType amenityType);
 
-    // Asegúrate de que tu consulta SQL es correcta para este método
     @Query("SELECT * FROM reservations WHERE reservation_date = :reservationDate AND ((start_time < :startTime AND end_time > :endTime) OR (start_time BETWEEN :betweenStart AND :betweenEnd))")
     Flux<Reservation> findReservationsByReservationDateAndStartTimeBeforeAndEndTimeAfterOrStartTimeBetween(
             LocalDate reservationDate,

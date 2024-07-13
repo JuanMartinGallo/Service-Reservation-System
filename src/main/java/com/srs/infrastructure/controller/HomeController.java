@@ -2,15 +2,19 @@ package com.srs.infrastructure.controller;
 
 import com.github.dockerjava.api.exception.UnauthorizedException;
 import com.srs.domain.models.Reservation;
+import com.srs.domain.models.ReservationMapper;
 import com.srs.domain.models.User;
+import com.srs.domain.models.dto.ReservationDTO;
 import com.srs.domain.services.ReservationService;
 import com.srs.domain.services.impl.UserServiceImpl;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
+import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -26,6 +30,7 @@ public class HomeController {
 
     private final UserServiceImpl userService;
     private final ReservationService reservationService;
+    private final ReservationMapper reservationMapper;
 
     @GetMapping({"/", "/index", "/home"})
     public Mono<String> home(Authentication authentication, Model model, WebSession session, ServerWebExchange exchange) {
@@ -65,8 +70,8 @@ public class HomeController {
                         .flatMap(user -> {
                             log.debug("User fetched, adding to session attributes");
                             session.getAttributes().put("user", user);
-                            Reservation reservation = new Reservation();
-                            model.addAttribute("reservation", reservation);
+                            ReservationDTO reservationDTO = new ReservationDTO();
+                            model.addAttribute("reservationDTO", reservationDTO);
                             model.addAttribute("authenticated", true);
                             return Mono.just("reservations");
                         });
@@ -79,25 +84,33 @@ public class HomeController {
 
     @PostMapping("/reservations-submit")
     public Mono<String> reservationsSubmit(
-            @ModelAttribute Reservation reservation,
+            @Valid @ModelAttribute ReservationDTO reservationDTO,
+            BindingResult bindingResult,
             @SessionAttribute Mono<User> user
     ) {
-        log.debug("POST /reservations-submit called with reservation={}", reservation);
+        if (bindingResult.hasErrors()) {
+            log.error("Error in reservationsSubmit: {}", bindingResult.getAllErrors());
+            return Mono.just("error");
+        }
+
         return user.flatMap(reservationUser -> {
-            log.debug("Setting username in reservation");
-            reservation.setUsername(reservationUser.getUsername());
-            log.debug("Creating reservation");
-            return reservationService.createReservation(reservation)
-                    .flatMap(savedIdReservation -> {
-                        log.debug("Fetching reservation by id {}", savedIdReservation);
-                        return reservationService.getById(savedIdReservation);
-                    })
+            reservationDTO.setUsername(reservationUser.getUsername());
+            reservationDTO.setUserId(reservationUser.getId());
+            return reservationService.createReservation(reservationDTO)
+                    .flatMap(reservationService::getById)
                     .flatMap(reservationFromDb -> {
-                        log.debug("Adding reservation to user's reservations and updating user");
-                        reservationUser.getReservations().add(reservationFromDb);
+                        Reservation reservationEntity = reservationMapper.toEntity(reservationFromDb);
+                        reservationUser.getReservations().add(reservationEntity);
                         return userService.updateUser(reservationUser.getId(), reservationUser)
                                 .thenReturn("reservations");
+                    })
+                    .onErrorResume(e -> {
+                        log.error("Error in reservationsSubmit after userService.updateUser: ", e);
+                        return Mono.just("error");
                     });
+        }).onErrorResume(e -> {
+            log.error("Error in reservationsSubmit: ", e);
+            return Mono.just("error");
         });
     }
 

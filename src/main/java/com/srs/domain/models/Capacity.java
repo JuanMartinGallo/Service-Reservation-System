@@ -20,22 +20,14 @@ public class Capacity {
     private Long id;
 
     @Column("amenity_type")
-    private String amenityType;
+    private AmenityType amenityType;
 
     @Column("capacity")
     private int capacity;
 
     public Capacity(AmenityType amenityType, int capacity) {
-        this.amenityType = amenityType.toString();
+        this.amenityType = amenityType;
         this.capacity = capacity;
     }
 
-    public AmenityType getAmenityTypeEnum() {
-        return AmenityType.valueOf(this.amenityType);
-    }
-
-    public void setAmenityTypeEnum(AmenityType amenityType) {
-        this.amenityType = amenityType.toString();
-    }
 }
-

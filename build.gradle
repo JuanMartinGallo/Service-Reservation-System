@@ -85,6 +85,8 @@ dependencies {
     runtimeOnly libs.webjarsBootstrap
     runtimeOnly libs.webjarsPopper
     runtimeOnly libs.webjarsJquery
+    implementation libs.mapstruct
+    annotationProcessor libs.mapstructProcessor
 
 }
 

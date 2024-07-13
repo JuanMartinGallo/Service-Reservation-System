@@ -23,6 +23,15 @@ import static com.srs.domain.utils.ApplicationConstants.BAD_REQUEST;
 @RestControllerAdvice
 public class GlobalExceptionHandler {
 
+    @ExceptionHandler(Exception.class)
+    @ResponseStatus(HttpStatus.INTERNAL_SERVER_ERROR)
+    @ResponseBody
+    public Mono<GlobalErrorMessage> handleException(Exception exception, ServerHttpRequest request) {
+        log.error("Exception: {}", exception.getMessage());
+        String path = String.valueOf(request.getPath());
+        return Mono.just(GlobalErrorMessage.builder().title(HttpStatus.INTERNAL_SERVER_ERROR.getReasonPhrase()).message(exception.getMessage()).path(path).build());
+    }
+
     @ExceptionHandler(RuntimeException.class)
     @ResponseStatus(HttpStatus.BAD_REQUEST)
     @ResponseBody

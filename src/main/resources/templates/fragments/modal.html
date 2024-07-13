@@ -15,45 +15,47 @@
             </div>
 
             <div class="modal-body">
-                <form action="#" method="post" th:action="@{/reservations-submit}" th:object="${reservation}">
-                    <div>
-                        <label class="col-sm-2" for="type-select">Amenity</label>
-                        <div class="col-sm-10">
-                            <select class="form-control" id="type-select" th:field="*{amenityType}">
-                                <option value="POOL">POOL</option>
-                                <option value="SAUNA">SAUNA</option>
-                                <option value="GYM">GYM</option>
-                            </select>
-                        </div>
+                <form action="#" method="post" th:action="@{/reservations-submit}" th:object="${reservationDTO}">
+                    <input th:field="*{userId}" type="hidden"/>
+                    <input th:field="*{username}" type="hidden"/>
+                    <div class="form-group">
+                        <label for="type-select">Amenity</label>
+                        <select class="form-control" id="type-select" th:field="*{amenityType}">
+                            <option value="POOL">POOL</option>
+                            <option value="SAUNA">SAUNA</option>
+                            <option value="GYM">GYM</option>
+                        </select>
                     </div>
-                    <div>
-                        <label class="col-sm-2" for="start-date">Date</label>
-                        <div class="col-sm-10">
-                            <input class="form-control" id="start-date" max="2021-12-31" min="2021-05-01"
-                                   name="trip-start" th:field="*{reservationDate}" type="date"
-                                   value="2018-07-22"/>
-                        </div>
+                    <div class="form-group">
+                        <label for="start-date">Date</label>
+                        <input class="form-control" id="start-date" max="2024-12-31" min="2024-05-01"
+                               name="trip-start" th:field="*{reservationDate}" type="date"
+                               value="2024-07-22"/>
                     </div>
-                    <div>
-                        <label class="col-sm-2" for="start-time">From</label>
-                        <div class="col-sm-10">
-                            <input class="form-control" id="start-time" max="19:30" min="08:00"
-                                   name="time" required th:field="*{startTime}" type="time"/>
-                        </div>
+                    <div class="form-group">
+                        <label for="start-time">From</label>
+                        <input class="form-control" id="start-time" max="19:30" min="08:00"
+                               name="time" required th:field="*{startTime}" type="time"/>
                     </div>
-                    <div>
-                        <label class="col-sm-2" for="end-time">To</label>
-                        <div class="col-sm-10">
-                            <input class="form-control" id="end-time" max="20:00" min="08:30" name="time"
-                                   required th:field="*{endTime}" type="time"/>
-                            <small>Amenities are available from 8 am to 8 pm</small>
-                        </div>
+                    <div class="form-group">
+                        <label for="end-time">To</label>
+                        <input class="form-control" id="end-time" max="20:00" min="08:30" name="time"
+                               required th:field="*{endTime}" type="time"/>
+                        <small>Amenities are available from 8 am to 8 pm</small>
                     </div>
+
+                    <!-- Mensajes de error -->
+                    <div class="alert alert-danger" role="alert" th:if="${#fields.hasErrors('*')}">
+                        <p th:each="err : ${#fields.allErrors()}">
+                            <span th:text="${err}"></span>
+                        </p>
+                    </div>
+
                     <div class="modal-footer">
                         <button class="btn btn-secondary" data-bs-dismiss="modal" type="button">
                             Close
                         </button>
-                        <button class="btn btn-success" th:if="${#authorization.expression('isAuthenticated()')}"
+                        <button class="btn btn-success" th:if="${isLoggedIn}"
                                 type="submit" value="Submit">
                             Save changes
                         </button>
@@ -66,3 +68,4 @@
 </body>
 
 </html>
+

@@ -46,8 +46,8 @@ logging:
     level: "%5p [${spring.application.name:},%X{traceId:-},%X{spanId:-}]"
   level:
     com.srs: DEBUG
-    org.springframework.security: INFO
-    org.springframework: INFO
+    org.springframework.security: DEBUG
+    org.springframework: DEBUG
     com.srs.infrastructure.security: DEBUG
 
 # Server Configuration
