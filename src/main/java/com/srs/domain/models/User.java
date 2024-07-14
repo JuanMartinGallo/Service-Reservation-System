@@ -24,7 +24,7 @@ import java.util.stream.Stream;
 public class User implements UserDetails {
 
     @Transient
-    private final Set<Reservation> reservations = new HashSet<>();
+    private Set<Reservation> reservations = new HashSet<>();
     @Id
     @Column("id")
     private Long id;
@@ -49,18 +49,5 @@ public class User implements UserDetails {
     public Collection<? extends GrantedAuthority> getAuthorities() {
         return Stream.of(roles.split(", ")).map(SimpleGrantedAuthority::new)
                 .toList();
-    }
-
-    @Override
-    public String getPassword() {
-        return this.password;
-    }
-
-    public Roles getRoleEnum() {
-        return Roles.valueOf(this.roles);
-    }
-
-    public void setRoleEnum(Roles role) {
-        this.roles = role.toString();
     }
 }

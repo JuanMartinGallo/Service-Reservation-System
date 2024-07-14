@@ -52,10 +52,12 @@ public class UserServiceImpl implements UserService {
                     existingUser.setFullname(user.getFullname());
                     existingUser.setCountry(user.getCountry());
                     existingUser.setRoles(user.getRoles());
+                    existingUser.setReservations(user.getReservations());
                     return userRepository.save(existingUser);
                 })
                 .then();
     }
+
 
     @Override
     public Mono<Void> deleteUser(final Long id) {

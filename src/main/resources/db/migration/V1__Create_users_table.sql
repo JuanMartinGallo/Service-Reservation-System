@@ -16,7 +16,7 @@ DO $$ BEGIN
             amenity_type VARCHAR(50) UNIQUE NOT NULL,
             capacity INTEGER
         );
-        RAISE NOTICE 'La tabla capacities no existía y ha sido creada.';
+        RAISE NOTICE 'The table "capacities" was created.';
     END IF;
 END $$;
 
@@ -26,5 +26,8 @@ CREATE TABLE IF NOT EXISTS reservations (
     reservation_date DATE,
     start_time TIME,
     end_time TIME,
-    CONSTRAINT fk_amenity_type FOREIGN KEY (amenity_type) REFERENCES capacities (amenity_type)
+    username VARCHAR(50),
+    user_id INTEGER,
+    CONSTRAINT fk_amenity_type FOREIGN KEY (amenity_type) REFERENCES capacities (amenity_type) ON DELETE CASCADE,
+    CONSTRAINT fk_user_id FOREIGN KEY (user_id) REFERENCES users (id) ON DELETE CASCADE
 );

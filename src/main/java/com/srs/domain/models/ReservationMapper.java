@@ -20,7 +20,9 @@ public interface ReservationMapper {
             @Mapping(target = "reservationDate", source = "reservationDate"),
             @Mapping(target = "startTime", source = "startTime"),
             @Mapping(target = "endTime", source = "endTime"),
-            @Mapping(target = "amenityType", source = "amenityType")
+            @Mapping(target = "amenityType", source = "amenityType"),
+            @Mapping(target = "username", source = "username"),
+            @Mapping(target = "userId", source = "userId")
     })
     ReservationDTO toDto(Reservation reservation);
 
@@ -29,7 +31,9 @@ public interface ReservationMapper {
             @Mapping(target = "reservationDate", source = "reservationDate"),
             @Mapping(target = "startTime", source = "startTime"),
             @Mapping(target = "endTime", source = "endTime"),
-            @Mapping(target = "amenityType", source = "amenityType")
+            @Mapping(target = "amenityType", source = "amenityType"),
+            @Mapping(target = "username", source = "username"),
+            @Mapping(target = "userId", source = "userId")
     })
     Reservation toEntity(ReservationDTO reservationDTO);
 }

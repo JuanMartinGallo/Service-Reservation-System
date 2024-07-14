@@ -97,7 +97,7 @@ public class HomeController {
         if (principal instanceof UserDetails userDetails) {
             return userService.getUserByUsername(userDetails.getUsername())
                     .flatMap(reservationUser -> {
-                        reservationDTO.setUsername(userDetails.getUsername());
+                        reservationDTO.setUsername(reservationUser.getUsername());
                         reservationDTO.setUserId(reservationUser.getId());
                         log.debug("Reservation DTO: {}", reservationDTO);
 
