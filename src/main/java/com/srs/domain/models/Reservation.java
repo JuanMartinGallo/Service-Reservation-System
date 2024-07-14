@@ -21,7 +21,7 @@ public class Reservation {
     @Column("id")
     private Long id;
 
-    @Column("Username")
+    @Column("username")
     private String username;
 
     @DateTimeFormat(pattern = "MM/dd/yyyy")

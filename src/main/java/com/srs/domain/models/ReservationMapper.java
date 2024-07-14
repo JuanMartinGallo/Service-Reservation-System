@@ -8,6 +8,14 @@ import org.mapstruct.Mappings;
 @Mapper(componentModel = "spring")
 public interface ReservationMapper {
 
+    static AmenityType stringToAmenityType(String amenityType) {
+        return AmenityType.fromString(amenityType);
+    }
+
+    static String amenityTypeToString(AmenityType amenityType) {
+        return amenityType.toString();
+    }
+
     @Mappings({
             @Mapping(target = "reservationDate", source = "reservationDate"),
             @Mapping(target = "startTime", source = "startTime"),

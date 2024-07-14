@@ -1,6 +1,7 @@
 package com.srs.domain.services.impl;
 
 import com.srs.domain.exceptions.CapacityFullException;
+import com.srs.domain.models.AmenityType;
 import com.srs.domain.models.Reservation;
 import com.srs.domain.models.ReservationMapper;
 import com.srs.domain.models.dto.ReservationDTO;
@@ -47,7 +48,7 @@ public class ReservationServiceImpl implements ReservationService {
     @Override
     public Mono<Long> createReservation(final ReservationDTO reservationDTO) {
         log.debug("Creating reservation from DTO: {}", reservationDTO);
-        return capacityRepository.findByAmenityType(reservationDTO.getAmenityType())
+        return capacityRepository.findByAmenityType(AmenityType.valueOf(reservationDTO.getAmenityType()))
                 .flatMap(capacity -> reservationRepository
                         .findReservationsByReservationDateAndStartTimeBeforeAndEndTimeAfterOrStartTimeBetween(
                                 LocalDate.parse(reservationDTO.getReservationDate()),

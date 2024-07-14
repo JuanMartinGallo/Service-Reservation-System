@@ -10,13 +10,13 @@ import reactor.core.publisher.Mono;
 public interface UserService {
     Flux<User> findAll();
 
-    Mono<User> getById(final Long id);
+    Mono<User> getById(Long id);
 
-    Mono<Long> createUser(final User user);
+    Mono<Long> createUser(User user);
 
-    Mono<Void> updateUser(final Long id, final User user);
+    Mono<Void> updateUser(Long id, User user);
 
-    Mono<Void> deleteUser(final Long id);
+    Mono<Void> deleteUser(Long id);
 
     Mono<User> getUserByUsername(String username);
 

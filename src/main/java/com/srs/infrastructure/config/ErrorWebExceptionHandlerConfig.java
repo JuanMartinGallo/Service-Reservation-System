@@ -21,14 +21,20 @@ public class ErrorWebExceptionHandlerConfig {
     @Order(-2)
     public ErrorWebExceptionHandler errorWebExceptionHandler(List<ViewResolver> viewResolvers) {
         return (exchange, ex) -> {
-            if (ex instanceof ResponseStatusException responseStatusException &&
-                    (responseStatusException.getStatusCode() == HttpStatus.NOT_FOUND)) {
-                return ServerResponse.status(HttpStatus.NOT_FOUND)
-                        .contentType(MediaType.TEXT_HTML)
-                        .render("errors/404")
-                        .flatMap(response -> response.writeTo(exchange, new DefaultContext(viewResolvers)));
+            if (ex instanceof ResponseStatusException responseStatusException) {
+                if (responseStatusException.getStatusCode() == HttpStatus.NOT_FOUND) {
+                    return ServerResponse.status(HttpStatus.NOT_FOUND)
+                            .contentType(MediaType.TEXT_HTML)
+                            .render("errors/404")
+                            .flatMap(response -> response.writeTo(exchange, new DefaultContext(viewResolvers)));
+                }
             }
-            return Mono.error(ex);
+            // Handle other exceptions and render generic error page
+            return ServerResponse.status(HttpStatus.BAD_REQUEST)
+                    .contentType(MediaType.TEXT_HTML)
+                    .render("errors/error")
+                    .flatMap(response -> response.writeTo(exchange, new DefaultContext(viewResolvers)))
+                    .onErrorResume(e -> Mono.error(ex));
         };
     }
 
@@ -49,6 +55,11 @@ public class ErrorWebExceptionHandlerConfig {
         @Override
         public List<HttpMessageWriter<?>> messageWriters() {
             return HandlerStrategies.withDefaults().messageWriters();
+        }
+
+        @Override
+        public List<ViewResolver> viewResolvers() {
+            return viewResolvers;
         }
     }
 }

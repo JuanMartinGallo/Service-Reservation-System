@@ -1,6 +1,5 @@
 package com.srs.domain.models.dto;
 
-import com.srs.domain.models.AmenityType;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
 import lombok.Data;
@@ -22,7 +21,7 @@ public class ReservationDTO {
     private String endTime;
 
     @NotNull(message = "Amenity type is required")
-    private AmenityType amenityType;
+    private String amenityType;
 
     @NotNull(message = "User ID is required")
     private Long userId;
