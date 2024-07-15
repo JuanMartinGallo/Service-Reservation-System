@@ -31,4 +31,7 @@ public interface ReservationRepository extends R2dbcRepository<Reservation, Long
 
     @Query("SELECT * FROM reservations WHERE reservation_date = :reservationDate")
     Mono<Reservation> findReservationByReservationDate(String reservationDate);
+
+    @Query("SELECT * FROM reservations WHERE user_id = :userId")
+    Flux<Reservation> findByUserId(Long userId);
 }

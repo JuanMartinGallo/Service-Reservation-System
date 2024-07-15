@@ -4,7 +4,6 @@
 <head>
     <meta charset="UTF-8"/>
     <title>Reservations</title>
-
     <link rel="stylesheet" th:href="@{/webjars/bootstrap/css/bootstrap.min.css}"/>
 </head>
 
@@ -26,7 +25,10 @@
             </tr>
             </thead>
             <tbody>
-            <tr th:each="reservation : ${session.user.getReservations()}">
+            <tr th:if="${reservations.isEmpty()}">
+                <td colspan="5">No reservations found</td>
+            </tr>
+            <tr th:each="reservation : ${reservations}">
                 <td th:text="${reservation.getAmenityType()}"></td>
                 <td th:text="${reservation.getReservationDate()}"></td>
                 <td th:text="${reservation.getStartTime()}"></td>

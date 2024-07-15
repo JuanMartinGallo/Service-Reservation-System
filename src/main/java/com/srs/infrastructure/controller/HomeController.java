@@ -25,6 +25,8 @@ import org.springframework.web.server.ServerWebExchange;
 import org.springframework.web.server.WebSession;
 import reactor.core.publisher.Mono;
 
+import java.util.Collections;
+import java.util.Optional;
 import java.util.Set;
 
 @Controller
@@ -60,7 +62,6 @@ public class HomeController {
         return Mono.just("index");
     }
 
-
     @GetMapping("/reservations")
     public Mono<String> reservations(Authentication authentication, Model model, WebSession session) {
         log.debug("GET /reservations called");
@@ -72,11 +73,14 @@ public class HomeController {
                 log.debug("User details: {}", userDetails);
                 return userService.getUserByUsername(userDetails.getUsername())
                         .flatMap(user -> {
-                            log.debug("User fetched, adding to session attributes");
+                            log.debug("User fetched: {}", user);
+                            log.debug("User reservations: {}", user.getReservations());
                             session.getAttributes().put("user", user);
+                            log.debug("Session user: {}", Optional.ofNullable(session.getAttribute("user")));
                             ReservationDTO reservationDTO = new ReservationDTO();
                             model.addAttribute("reservationDTO", reservationDTO);
                             model.addAttribute("authenticated", true);
+                            model.addAttribute("reservations", user.getReservations() != null ? user.getReservations() : Collections.emptySet());
                             return Mono.just("reservations");
                         });
             } else {
@@ -119,7 +123,13 @@ public class HomeController {
                                     Reservation reservationEntity = reservationMapper.toEntity(reservationFromDb);
                                     reservationUser.getReservations().add(reservationEntity);
                                     return userService.updateUser(reservationUser.getId(), reservationUser)
-                                            .thenReturn("reservations");
+                                            .thenReturn(reservationUser);
+                                })
+                                .flatMap(updatedUser -> {
+                                    model.addAttribute("reservationDTO", new ReservationDTO());
+                                    model.addAttribute("authenticated", true);
+                                    model.addAttribute("reservations", updatedUser.getReservations() != null ? updatedUser.getReservations() : Collections.emptySet());
+                                    return Mono.just("reservations");
                                 })
                                 .onErrorResume(e -> {
                                     log.error("Error in reservationsSubmit after userService.updateUser: ", e);

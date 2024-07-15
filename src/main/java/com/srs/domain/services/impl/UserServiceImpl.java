@@ -2,6 +2,7 @@ package com.srs.domain.services.impl;
 
 import com.srs.domain.models.User;
 import com.srs.domain.models.dto.RegisterRequest;
+import com.srs.domain.repositories.ReservationRepository;
 import com.srs.domain.repositories.UserRepository;
 import com.srs.domain.services.UserService;
 import lombok.RequiredArgsConstructor;
@@ -13,6 +14,8 @@ import org.springframework.web.server.ResponseStatusException;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
+import java.util.HashSet;
+
 import static com.srs.domain.utils.ApplicationConstants.USER_NOT_FOUND;
 import static com.srs.domain.utils.ApplicationUtils.mapToEntity;
 
@@ -23,6 +26,7 @@ public class UserServiceImpl implements UserService {
 
     private final UserRepository userRepository;
     private final PasswordEncoder passwordEncoder;
+    private final ReservationRepository reservationRepository;
 
     @Override
     public Flux<User> findAll() {
@@ -70,7 +74,16 @@ public class UserServiceImpl implements UserService {
     public Mono<User> getUserByUsername(String username) {
         log.debug("Invoking findByUsername in UserServiceImpl with username: {}", username);
         return userRepository.findByUsername(username)
-                .switchIfEmpty(Mono.error(new ResponseStatusException(HttpStatus.NOT_FOUND, USER_NOT_FOUND)));
+                .switchIfEmpty(Mono.error(new ResponseStatusException(HttpStatus.NOT_FOUND, USER_NOT_FOUND)))
+                .flatMap(user -> {
+                    log.debug("User found: {}", user);
+                    return reservationRepository.findByUserId(user.getId())
+                            .collectList()
+                            .map(HashSet::new)
+                            .doOnNext(reservations -> log.debug("User reservations found: {}", reservations))
+                            .doOnNext(user::setReservations)
+                            .thenReturn(user);
+                });
     }
 
     @Override
