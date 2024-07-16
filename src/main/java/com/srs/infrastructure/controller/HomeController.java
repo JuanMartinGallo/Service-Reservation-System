@@ -21,6 +21,7 @@ import org.springframework.validation.FieldError;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.server.ServerWebExchange;
 import org.springframework.web.server.WebSession;
 import reactor.core.publisher.Mono;
@@ -28,6 +29,8 @@ import reactor.core.publisher.Mono;
 import java.util.Collections;
 import java.util.Optional;
 import java.util.Set;
+
+import static com.srs.domain.utils.ApplicationConstants.*;
 
 @Controller
 @RequiredArgsConstructor
@@ -81,6 +84,7 @@ public class HomeController {
                             model.addAttribute("reservationDTO", reservationDTO);
                             model.addAttribute("authenticated", true);
                             model.addAttribute("reservations", user.getReservations() != null ? user.getReservations() : Collections.emptySet());
+                            user.getReservations().forEach(reservation -> log.debug("Reservation ID: {}", reservation.getId()));
                             return Mono.just("reservations");
                         });
             } else {
@@ -111,10 +115,10 @@ public class HomeController {
 
                         if (!violations.isEmpty()) {
                             for (ConstraintViolation<ReservationDTO> violation : violations) {
-                                bindingResult.addError(new FieldError("reservationDTO", violation.getPropertyPath().toString(), violation.getMessage()));
+                                bindingResult.addError(new FieldError(RESERVATION_DTO, violation.getPropertyPath().toString(), violation.getMessage()));
                             }
-                            model.addAttribute("message", bindingResult.getAllErrors());
-                            return Mono.just("errors/error");
+                            model.addAttribute(MESSAGE, bindingResult.getAllErrors());
+                            return Mono.just(ERROR_PATH);
                         }
 
                         return reservationService.createReservation(reservationDTO)
@@ -126,35 +130,53 @@ public class HomeController {
                                             .thenReturn(reservationUser);
                                 })
                                 .flatMap(updatedUser -> {
-                                    model.addAttribute("reservationDTO", new ReservationDTO());
+                                    model.addAttribute(RESERVATION_DTO, new ReservationDTO());
                                     model.addAttribute("authenticated", true);
                                     model.addAttribute("reservations", updatedUser.getReservations() != null ? updatedUser.getReservations() : Collections.emptySet());
                                     return Mono.just("reservations");
                                 })
                                 .onErrorResume(e -> {
                                     log.error("Error in reservationsSubmit after userService.updateUser: ", e);
-                                    model.addAttribute("message", e.getMessage());
-                                    return Mono.just("errors/error");
+                                    model.addAttribute(MESSAGE, e.getMessage());
+                                    return Mono.just(ERROR_PATH);
                                 });
                     })
                     .onErrorResume(e -> {
                         log.error("Error in reservationsSubmit: ", e);
-                        model.addAttribute("message", e.getMessage());
-                        return Mono.just("errors/error");
+                        model.addAttribute(MESSAGE, e.getMessage());
+                        return Mono.just(ERROR_PATH);
                     });
         } else {
             log.error("Principal is not an instance of UserDetails");
-            model.addAttribute("message", "Authentication error");
-            return Mono.just("errors/error");
+            model.addAttribute(MESSAGE, "Authentication error");
+            return Mono.just(ERROR_PATH);
         }
     }
 
-    @PostMapping("/delete-reservations")
-    public Mono<String> deleteReservations(
-            @ModelAttribute Reservation reservation
+    @PostMapping("/delete-reservation")
+    public Mono<String> deleteReservation(
+            @RequestParam Long id,
+            ServerWebExchange exchange,
+            BindingResult bindingResult,
+            Model model
     ) {
-        log.debug("POST /delete-reservations called with reservation={}", reservation);
-        return reservationService.deleteReservation(reservation.getId())
-                .thenReturn("redirect:/reservations");
+        log.debug("POST /delete-reservation called with id={}", id);
+
+        exchange.getFormData().subscribe(formData -> log.debug("Form Data: {}", formData));
+
+        if (bindingResult.hasErrors()) {
+            log.error("BindingResult has errors: {}", bindingResult.getAllErrors());
+            model.addAttribute(MESSAGE, "Error in request parameters");
+            return Mono.just(ERROR_PATH);
+        }
+
+        return reservationService.deleteReservation(id)
+                .then(Mono.just("redirect:/reservations"))
+                .onErrorResume(e -> {
+                    log.error("Error deleting reservation: ", e);
+                    model.addAttribute("message", "Error deleting reservation: " + e.getMessage());
+                    return Mono.just(ERROR_PATH);
+                });
     }
+
 }

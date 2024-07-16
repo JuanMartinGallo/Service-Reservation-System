@@ -41,4 +41,15 @@ public class Reservation {
 
     @Column("user_id")
     private Long userId;
+
+    @Override
+    public String toString() {
+        return "Reservation{" +
+                "id=" + id +
+                ", amenityType='" + amenityType + '\'' +
+                ", reservationDate=" + reservationDate +
+                ", startTime=" + startTime +
+                ", endTime=" + endTime +
+                '}';
+    }
 }

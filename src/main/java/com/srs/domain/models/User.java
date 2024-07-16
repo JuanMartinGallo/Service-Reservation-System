@@ -11,7 +11,6 @@ import org.springframework.security.core.userdetails.UserDetails;
 
 import java.time.OffsetDateTime;
 import java.util.Collection;
-import java.util.HashSet;
 import java.util.Set;
 import java.util.stream.Stream;
 
@@ -24,7 +23,7 @@ import java.util.stream.Stream;
 public class User implements UserDetails {
 
     @Transient
-    private Set<Reservation> reservations = new HashSet<>();
+    private Set<Reservation> reservations;
     @Id
     @Column("id")
     private Long id;

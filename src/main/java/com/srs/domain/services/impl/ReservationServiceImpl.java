@@ -37,7 +37,7 @@ public class ReservationServiceImpl implements ReservationService {
     }
 
     @Override
-    public Mono<ReservationDTO> getById(final Long id) {
+    public Mono<ReservationDTO> getById(Long id) {
         return reservationRepository.findById(id)
                 .doOnNext(reservation -> log.debug("Found reservation by ID {}: {}", id, reservation))
                 .switchIfEmpty(Mono.error(new ResponseStatusException(HttpStatus.NOT_FOUND, "Reservation not found")))
@@ -46,7 +46,7 @@ public class ReservationServiceImpl implements ReservationService {
     }
 
     @Override
-    public Mono<Long> createReservation(final ReservationDTO reservationDTO) {
+    public Mono<Long> createReservation(ReservationDTO reservationDTO) {
         log.debug("Creating reservation from DTO: {}", reservationDTO);
         return capacityRepository.findByAmenityType(AmenityType.valueOf(reservationDTO.getAmenityType()))
                 .flatMap(capacity -> reservationRepository
@@ -74,7 +74,7 @@ public class ReservationServiceImpl implements ReservationService {
     }
 
     @Override
-    public Mono<Void> updateReservation(final Long id, final ReservationDTO reservationDTO) {
+    public Mono<Void> updateReservation(Long id, ReservationDTO reservationDTO) {
         log.debug("Updating reservation ID {} with DTO: {}", id, reservationDTO);
         return reservationRepository.findById(id)
                 .switchIfEmpty(Mono.error(new ResponseStatusException(HttpStatus.NOT_FOUND, "Reservation not found")))
@@ -89,7 +89,7 @@ public class ReservationServiceImpl implements ReservationService {
     }
 
     @Override
-    public Mono<Void> deleteReservation(final Long id) {
+    public Mono<Void> deleteReservation(Long id) {
         log.debug("Deleting reservation ID {}", id);
         return reservationRepository.findById(id)
                 .switchIfEmpty(Mono.error(new ResponseStatusException(HttpStatus.NOT_FOUND, "Reservation not found")))

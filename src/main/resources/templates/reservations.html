@@ -1,14 +1,11 @@
 <!DOCTYPE HTML>
 <html lang="en" xmlns:th="http://www.thymeleaf.org">
-
 <head>
     <meta charset="UTF-8"/>
     <title>Reservations</title>
     <link rel="stylesheet" th:href="@{/webjars/bootstrap/css/bootstrap.min.css}"/>
 </head>
-
 <body>
-
 <div>
     <div th:insert="~{fragments/nav :: nav}"></div>
     <div class="container" style="padding-top: 10vh; display: flex; flex-direction: column; align-items: center;">
@@ -21,6 +18,7 @@
                 <th scope="col">Date</th>
                 <th scope="col">Start Time</th>
                 <th scope="col">End Time</th>
+                <th scope="col">ID</th>
                 <th scope="col" th:if="${#authorization.expression('isAuthenticated()')}">Actions</th>
             </tr>
             </thead>
@@ -29,14 +27,17 @@
                 <td colspan="5">No reservations found</td>
             </tr>
             <tr th:each="reservation : ${reservations}">
-                <td th:text="${reservation.getAmenityType()}"></td>
-                <td th:text="${reservation.getReservationDate()}"></td>
-                <td th:text="${reservation.getStartTime()}"></td>
-                <td th:text="${reservation.getEndTime()}"></td>
+                <td th:text="${reservation.amenityType}"></td>
+                <td th:text="${reservation.reservationDate}"></td>
+                <td th:text="${reservation.startTime}"></td>
+                <td th:text="${reservation.endTime}"></td>
+                <td th:text="${reservation.id}"></td>
                 <td th:if="${#authorization.expression('isAuthenticated()')}">
-                    <button class="btn btn-primary" method="POST" th:href="@{/delete-reservation}"
-                            th:object="${reservation}">Delete
-                    </button>
+                    <form method="post" th:action="@{/delete-reservation}">
+                        <input name="id" th:value="${reservation.id}" type="hidden"/>
+                        <span th:text="${reservation.id}"></span>
+                        <button class="btn btn-primary" type="submit">Delete</button>
+                    </form>
                 </td>
             </tr>
             </tbody>
@@ -58,5 +59,4 @@
 <script th:src="@{/webjars/bootstrap/js/bootstrap.min.js}"></script>
 
 </body>
-
 </html>
