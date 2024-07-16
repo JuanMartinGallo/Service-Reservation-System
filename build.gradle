@@ -22,17 +22,19 @@ repositories {
 }
 
 dependencies {
-    // Spring Core
+    // Spring
     implementation libs.springBootStarterWebflux
     implementation libs.springBootStarterValidation
     implementation libs.springBootStarterDataR2dbc
     implementation libs.springJdbc
     implementation libs.springThymeleaf
     developmentOnly libs.springDevtools
+    implementation libs.springRetry
+    implementation libs.springAspects
 
-    // JSON
-    implementation libs.jacksonDatabind
-    implementation libs.jacksonDatatypeJsr310
+    // Resilience
+    implementation libs.aspectjrt
+    implementation libs.aspectjweaver
 
     // Data
     implementation libs.flywayCore
@@ -40,23 +42,24 @@ dependencies {
     runtimeOnly libs.postgresql
     runtimeOnly libs.r2dbcPostgresql
 
+    // JSON
+    implementation libs.jacksonDatabind
+    implementation libs.jacksonDatatypeJsr310
+    implementation libs.jsonWebToken
+
     // Lombok
     compileOnly libs.lombok
     annotationProcessor libs.lombok
     implementation libs.lombokMapstructBinding
 
+    // Reactive
+    testImplementation libs.reactorTest
+
     // Documentation
     implementation libs.springdocOpenapiStarterWebfluxUi
 
-    // Resilience
-    implementation libs.springRetry
-    implementation libs.springAspects
-    implementation libs.aspectjrt
-    implementation libs.aspectjweaver
-
     // Unit Testing
     testImplementation libs.springBootStarterTest
-    testImplementation libs.reactorTest
     testImplementation libs.testng
 
     // Integration Test
@@ -74,9 +77,6 @@ dependencies {
     implementation libs.springSecurityOauth2ResourceServer
     implementation libs.dockerJava
 
-    // JWT
-    implementation libs.jsonWebToken
-
     // Frontend
     implementation libs.thymeleaf
     implementation libs.thymeleafLayoutDialect
@@ -86,9 +86,10 @@ dependencies {
     runtimeOnly libs.webjarsBootstrap
     runtimeOnly libs.webjarsPopper
     runtimeOnly libs.webjarsJquery
+
+    // Mapper
     implementation libs.mapstruct
     annotationProcessor libs.mapstructProcessor
-
 }
 
 checkstyle {
