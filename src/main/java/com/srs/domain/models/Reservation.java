@@ -21,10 +21,10 @@ public class Reservation {
     @Column("id")
     private Long id;
 
-    @Column("Username")
+    @Column("username")
     private String username;
 
-    @DateTimeFormat(pattern = "yyyy-MM-dd")
+    @DateTimeFormat(pattern = "MM/dd/yyyy")
     @Column("reservation_date")
     private LocalDate reservationDate;
 
@@ -37,9 +37,19 @@ public class Reservation {
     private LocalTime endTime;
 
     @Column("amenity_type")
-    private String amenityType;
+    private AmenityType amenityType;
 
     @Column("user_id")
     private Long userId;
-}
 
+    @Override
+    public String toString() {
+        return "Reservation{" +
+                "id=" + id +
+                ", amenityType='" + amenityType + '\'' +
+                ", reservationDate=" + reservationDate +
+                ", startTime=" + startTime +
+                ", endTime=" + endTime +
+                '}';
+    }
+}

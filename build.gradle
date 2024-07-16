@@ -22,9 +22,13 @@ repositories {
 }
 
 dependencies {
-    // Spring
+    // Spring Core
     implementation libs.springBootStarterWebflux
     implementation libs.springBootStarterValidation
+    implementation libs.springBootStarterDataR2dbc
+    implementation libs.springJdbc
+    implementation libs.springThymeleaf
+    developmentOnly libs.springDevtools
 
     // JSON
     implementation libs.jacksonDatabind
@@ -33,21 +37,16 @@ dependencies {
     // Data
     implementation libs.flywayCore
     implementation libs.flywayPostgresql
-    implementation libs.springBootStarterDataR2dbc
-    implementation libs.springJdbc
     runtimeOnly libs.postgresql
     runtimeOnly libs.r2dbcPostgresql
 
     // Lombok
     compileOnly libs.lombok
     annotationProcessor libs.lombok
+    implementation libs.lombokMapstructBinding
 
     // Documentation
     implementation libs.springdocOpenapiStarterWebfluxUi
-
-//    // Metrics & Monitoring
-//    implementation libs.springBootStarterActuator
-//    implementation libs.micrometerRegistryPrometheus
 
     // Resilience
     implementation libs.springRetry
@@ -68,11 +67,28 @@ dependencies {
 
     // Security
     implementation libs.springSecurity
+    implementation libs.springSecurityCore
+    implementation libs.springSecurityConfig
+    implementation libs.springSecurityWeb
     testImplementation libs.springSecurityTest
     implementation libs.springSecurityOauth2ResourceServer
+    implementation libs.dockerJava
 
     // JWT
     implementation libs.jsonWebToken
+
+    // Frontend
+    implementation libs.thymeleaf
+    implementation libs.thymeleafLayoutDialect
+    implementation libs.thymeleafExtrasSpringsecurity6
+    implementation libs.thymeleafSpring6
+    runtimeOnly libs.webjarsLocator
+    runtimeOnly libs.webjarsBootstrap
+    runtimeOnly libs.webjarsPopper
+    runtimeOnly libs.webjarsJquery
+    implementation libs.mapstruct
+    annotationProcessor libs.mapstructProcessor
+
 }
 
 checkstyle {
@@ -117,7 +133,22 @@ bootRun {
     jvmArgs = ['-Dspring.profiles.active=local']
 }
 
-tasks.withType(JavaCompile) {
+bootJar {
+    dependsOn processResources
+}
+
+jar {
+    from('src/main/resources/static') {
+        into 'static'
+        duplicatesStrategy = 'exclude'
+    }
+    from('src/main/resources/templates') {
+        into 'templates'
+        duplicatesStrategy = 'exclude'
+    }
+}
+
+tasks.withType(JavaCompile).configureEach {
     options.compilerArgs += ['-parameters']
 }
 

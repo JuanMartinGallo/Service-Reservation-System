@@ -7,8 +7,10 @@ services:
     depends_on:
       - postgres-db
     environment:
-      - LOGGING_LEVEL: DEBUG
-
+      - LOGGING_LEVEL=DEBUG
+    volumes:
+      - ../../src/main/resources/static:/app/src/main/resources/static
+      - ../../src/main/resources/templates:/app/src/main/resources/templates
 
   postgres-db:
     image: postgres:16.3

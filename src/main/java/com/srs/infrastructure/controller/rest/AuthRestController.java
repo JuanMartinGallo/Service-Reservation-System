@@ -1,11 +1,15 @@
-package com.srs.infraestructure.controller.rest;
+package com.srs.infrastructure.controller.rest;
 
 import com.srs.domain.repositories.UserRepository;
 import com.srs.domain.services.JwtService;
 import jakarta.validation.Valid;
-import lombok.AllArgsConstructor;
+import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.authentication.AnonymousAuthenticationToken;
+import org.springframework.security.core.context.ReactiveSecurityContextHolder;
+import org.springframework.security.core.context.SecurityContext;
 import org.springframework.validation.BindingResult;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -14,10 +18,11 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 import reactor.core.publisher.Mono;
 
-@AllArgsConstructor
+@RequiredArgsConstructor
 @RestController
 @RequestMapping("/auth")
 @Validated
+@Slf4j
 public class AuthRestController {
 
     private final JwtService jwtService;
@@ -43,5 +48,26 @@ public class AuthRestController {
             return Mono.just(ResponseEntity.badRequest().body("Invalid id: " + id));
         }
     }
-}
 
+    @GetMapping("/check-authentication")
+    public Mono<String> checkAuthentication() {
+        log.debug("Entering checkAuthentication endpoint");
+
+        return ReactiveSecurityContextHolder.getContext()
+                .doOnNext(context -> log.debug("SecurityContext: {}", context))
+                .map(SecurityContext::getAuthentication)
+                .flatMap(authentication -> {
+                    log.debug("Authentication: {}", authentication);
+                    if (authentication == null || !authentication.isAuthenticated() || authentication instanceof AnonymousAuthenticationToken) {
+                        log.debug("No authentication found");
+                        return Mono.just("Not Authenticated");
+                    } else {
+                        log.debug("Authentication found");
+                        return Mono.just("Authenticated as " + authentication.getName());
+                    }
+                })
+                .defaultIfEmpty("Not Authenticated because authentication is empty")
+                .doOnError(error -> log.error("Error in checkAuthentication: {}", error.getMessage()));
+    }
+
+}

@@ -1,4 +1,4 @@
-package com.srs.infraestructure.controller.rest;
+package com.srs.infrastructure.controller.rest;
 
 import com.srs.domain.models.dto.AuthResponse;
 import com.srs.domain.models.dto.RegisterRequest;
@@ -14,7 +14,7 @@ import reactor.core.publisher.Mono;
 
 @RestController
 @RequiredArgsConstructor
-public class RestControllers {
+public class RegisterControllers {
 
     private final AuthService authService;
     private final UserRepository userRepository;

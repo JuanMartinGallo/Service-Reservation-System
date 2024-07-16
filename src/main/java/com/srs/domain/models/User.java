@@ -11,9 +11,8 @@ import org.springframework.security.core.userdetails.UserDetails;
 
 import java.time.OffsetDateTime;
 import java.util.Collection;
-import java.util.HashSet;
-import java.util.List;
 import java.util.Set;
+import java.util.stream.Stream;
 
 @Getter
 @Setter
@@ -24,7 +23,7 @@ import java.util.Set;
 public class User implements UserDetails {
 
     @Transient
-    private final Set<Reservation> reservations = new HashSet<>();
+    private Set<Reservation> reservations;
     @Id
     @Column("id")
     private Long id;
@@ -36,8 +35,8 @@ public class User implements UserDetails {
     private String country;
     @Column("password")
     private String password;
-    @Column("role")
-    private String role;
+    @Column("roles")
+    private String roles;
     @Column("date_created")
     private OffsetDateTime dateCreated;
 
@@ -47,39 +46,7 @@ public class User implements UserDetails {
     //UserDetails implementations
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {
-        return List.of(new SimpleGrantedAuthority((role)));
-    }
-
-    @Override
-    public boolean isAccountNonExpired() {
-        return true;
-    }
-
-    @Override
-    public boolean isAccountNonLocked() {
-        return true;
-    }
-
-    @Override
-    public boolean isCredentialsNonExpired() {
-        return true;
-    }
-
-    @Override
-    public boolean isEnabled() {
-        return true;
-    }
-
-    @Override
-    public String getPassword() {
-        return this.password;
-    }
-
-    public Role getRoleEnum() {
-        return Role.valueOf(this.role);
-    }
-
-    public void setRoleEnum(Role role) {
-        this.role = role.toString();
+        return Stream.of(roles.split(", ")).map(SimpleGrantedAuthority::new)
+                .toList();
     }
 }

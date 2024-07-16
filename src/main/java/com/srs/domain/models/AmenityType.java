@@ -11,9 +11,17 @@ public enum AmenityType {
         this.name = name;
     }
 
+    public static AmenityType fromString(String name) {
+        for (AmenityType type : AmenityType.values()) {
+            if (type.name.equalsIgnoreCase(name)) {
+                return type;
+            }
+        }
+        throw new IllegalArgumentException("Unknown AmenityType: " + name);
+    }
+
     @Override
     public String toString() {
         return name;
     }
 }
-
